@@ -660,13 +660,14 @@ function loadAllMedia(){
             row.appendChild(categoryCell);
 
             var mediaTypeCell = document.createElement("td");
-            if(media.book) {
-                mediaTypeCell.textContent = "Bok";
-            } else if(media.audioBook) {
-                mediaTypeCell.textContent = "Ljudbok";
-            } else if(media.film) {
-                mediaTypeCell.textContent = "Film";
-            }
+            mediaTypeCell.textContent = media.mediatype;
+            // if(media.book) {
+            //     mediaTypeCell.textContent = "Bok";
+            // } else if(media.audioBook) {
+            //     mediaTypeCell.textContent = "Ljudbok";
+            // } else if(media.film) {
+            //     mediaTypeCell.textContent = "Film";
+            // }
             row.appendChild(mediaTypeCell);
 
             var lentbyCell = document.createElement("td");
