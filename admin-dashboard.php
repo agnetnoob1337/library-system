@@ -18,7 +18,7 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="./css/admin-dashboard.css">
 </head>
 <body data-section="media">
-
+    <a href="php/logout.php">Logga ut</a>
     <menu>
         <div class="menu-item active" data-target="media">
             <h3>Media</h3>

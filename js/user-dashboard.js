@@ -168,13 +168,14 @@ async function loadAllMedia(mediaType = '', ) {
             row.appendChild(categoryCell);
 
             var typeCell = document.createElement("td");
-            if(media.book) {
-                typeCell.textContent = "Bok";
-            } else if(media.audiobook) {
-                typeCell.textContent = "Ljudbok";
-            } else if(media.film) {
-                typeCell.textContent = "Film";
-            }
+            typeCell.textContent = media.mediatype;
+            // if(media.book) {
+            //     typeCell.textContent = "Bok";
+            // } else if(media.audiobook) {
+            //     typeCell.textContent = "Ljudbok";
+            // } else if(media.film) {
+            //     typeCell.textContent = "Film";
+            // }
             row.appendChild(typeCell);
 
             availableMediaTableBody.appendChild(row);
@@ -218,13 +219,14 @@ async function loadAllMedia(mediaType = '', ) {
             row.appendChild(categoryCell);
 
             var mediaTypeCell = document.createElement("td");
-            if(loan.book) {
-                mediaTypeCell.textContent = "Bok";
-            } else if(loan.audioBook) {
-                mediaTypeCell.textContent = "Ljudbok";
-            } else if(loan.film) {
-                mediaTypeCell.textContent = "Film";
-            }
+            mediaTypeCell.textContent = loan.mediatype;
+            // if(loan.book) {
+            //     mediaTypeCell.textContent = "Bok";
+            // } else if(loan.audioBook) {
+            //     mediaTypeCell.textContent = "Ljudbok";
+            // } else if(loan.film) {
+            //     mediaTypeCell.textContent = "Film";
+            // }
             row.appendChild(mediaTypeCell);
 
             var dueDateCell = document.createElement("td");

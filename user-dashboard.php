@@ -18,6 +18,7 @@ if (!isset($_SESSION['user_id'])) {
     <title>user dashboard</title>
 </head>
 <body>
+    <a href="php/logout.php">Logga ut</a>
     <menu>
         <button id="checkout">Låna</button>
         <button id="return">Lämna tillbaka</button>
