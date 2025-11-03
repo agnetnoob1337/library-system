@@ -40,21 +40,30 @@ class ApiHandler{
     }
 
 
-    function addMedia(string $title, string $author = "", string $SABSignum, int $price = 0, bool $book = false, bool $audioBook = false, bool $film = false, string $ISBN, int $quantity = 1, string $IMDB = ""){
+    function addMedia(string $title, string $author = "", string $SABSignum, int $price = 0, $mediatype, string $ISBN, int $quantity = 1, string $IMDB = ""){
 
-        if ($book + $audioBook + $film < 1) {
-            return json_encode(["error" => "At least one media type must be selected."]);
-        }
+        // if ($book + $audioBook + $film < 1) {
+        //     return json_encode(["error" => "At least one media type must be selected."]);
+        // }
 
-        if($book || $audioBook){
+        if($mediatype == "book" || $mediatype == "audiobook"){
             if (strlen($ISBN) != 13) {
                 return json_encode(["error" => "ISBN must be 13 characters long."]);
             }
         }
-        elseif ($film){
+        elseif ($mediatype == "film"){
             if (strlen($IMDB) >= 7) {
                 return json_encode(["error" => "IMDB ID must be at least 7 characters long."]);
             }
+        }
+        if($mediatype == "book"){
+            $mediatype = "bok";
+        }
+        if($mediatype == "audiobook"){
+            $mediatype = "ljudbok";
+        }
+        if($mediatype == "film"){
+            $mediatype = "film";
         }
 
         if ($price < 0) {
@@ -71,13 +80,31 @@ class ApiHandler{
 
         $this->conn->begin_transaction();
         try {
-            $addMediaQuery = "INSERT INTO media (title, author, SAB_signum, price, book, audiobook, film, ISBN, IMDB) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $addMediaQuery = "INSERT INTO media (title, author, SAB_signum, price, ISBN, IMDB, mediatype) VALUES (?, ?, ?, ?, ?, ?, ?)";
             $stmt = $this->conn->prepare($addMediaQuery);
-
+            $stmt->bind_param("sssisss", $title, $author, $SABSignum, $price, $ISBN, $IMDB, $mediatype);
+            if (!$stmt->execute()) {
+                throw new Exception("Error: " . $stmt->error);
+            }
+            if($mediatype == "film"){
+                $getMediaId = "SELECT id FROM media WHERE IMDB = ?";
+                $stmt = $this->conn->prepare($getMediaId);
+                $stmt->bind_param("s", $IMDB);
+            } else{
+                $getMediaId = "SELECT id FROM media WHERE ISBN = ?";
+                $stmt = $this->conn->prepare($getMediaId);
+                $stmt->bind_param("s", $ISBN);
+            }
+            $stmt->execute();
+            $result = $stmt->get_result();
             for ($i = 0; $i < $quantity; $i++) {
-                $stmt->bind_param("sssdiisss", $title, $author, $SABSignum, $price, $book, $audioBook, $film, $ISBN, $IMDB);
-                if (!$stmt->execute()) {
-                    throw new Exception("Error: " . $stmt->error);
+                if($row = $result->fetch_assoc()){
+                    $addCopyQuery = "INSERT INTO copy (media_id) VALUES(?)";
+                    $stmt = $this->conn->prepare($addCopyQuery);
+                    $stmt->bind_param("i", $row['id']);
+                    if (!$stmt->execute()) {
+                        throw new Exception("Error: " . $stmt->error);
+                    }
                 }
             }
 
@@ -99,11 +126,11 @@ class ApiHandler{
         // Base query
         $query = "SELECT media.*";
         // If showing unavailable (checked out) items, include user info
-        // if ($onlyAvailable === false) {
-        //     $query .= ", checked_out.*, users.id AS user_id, users.username 
-        //                 "
-        //     ;
-        // }
+        if ($onlyAvailable === false) {
+            $query .= ", checked_out.*, users.id AS user_id, users.username 
+                        "
+            ;
+        }
 
         $query .= " FROM media";
 
@@ -112,7 +139,7 @@ class ApiHandler{
             $query = "
             SELECT media.*, checked_out.*, users.id AS user_id, users.username
             FROM media
-            INNER JOIN checked_out ON checked_out.m_id = media.id
+            INNER JOIN checked_out ON checked_out.c_id = media.id
             INNER JOIN users ON checked_out.user_id = users.id
             WHERE 1=1";
         }
@@ -123,31 +150,36 @@ class ApiHandler{
                     WHERE NOT EXISTS (
                     SELECT 1 
                     FROM checked_out 
-                    WHERE checked_out.m_id = media.id)";
+                    WHERE checked_out.c_id = media.id)";
         }else {
             // All media (available + checked out)
             $query = "
                 SELECT media.*,
                        CASE 
-                           WHEN checked_out.m_id IS NULL THEN 'available' 
+                           WHEN checked_out.c_id IS NULL THEN 'available' 
                            ELSE 'checked_out' 
                        END AS status
                 FROM media
-                LEFT JOIN checked_out ON checked_out.m_id = media.id
+                LEFT JOIN checked_out ON checked_out.c_id = media.id
             ";
         }
 
         //$query .= " WHERE 1=1"; // base condition
 
         // Apply filters
+        // if (!empty($filters['filter'])) {
+        //     if ($filters['filter'] === "book") {
+        //         $query .= " AND book = 1";
+        //     } elseif ($filters['filter'] === "audiobook") {
+        //         $query .= " AND audiobook = 1";
+        //     } elseif ($filters['filter'] === "film") {
+        //         $query .= " AND film = 1";
+        //     }
+        // }
         if (!empty($filters['filter'])) {
-            if ($filters['filter'] === "book") {
-                $query .= " AND book = 1";
-            } elseif ($filters['filter'] === "audiobook") {
-                $query .= " AND audiobook = 1";
-            } elseif ($filters['filter'] === "film") {
-                $query .= " AND film = 1";
-            }
+            $query .= " AND mediatype = ?";
+            $params[] = $filters['filter'];
+            $types .= "s";
         }
 
         if (!empty($filters['id'])) {
@@ -229,22 +261,23 @@ class ApiHandler{
             $paramsToBind[] = $params['price'];
         }
 
+        // get the value of a select statement
         if(isset($params['book'])){
             $updateMediaQuery .= "book = ?, ";
-            $types .= "i";
-            $paramsToBind[] = $params['book'];
+            $types .= "s";
+            $paramsToBind[] = "book";
         }
 
         if(isset($params['audioBook'])){
             $updateMediaQuery .= "audiobook = ?, ";
-            $types .= "i";
-            $paramsToBind[] = $params['audioBook'];
+            $types .= "s";
+            $paramsToBind[] = "audioBook";
         }
 
         if(isset($params['film'])){
             $updateMediaQuery .= "film = ?, ";
-            $types .= "i";
-            $paramsToBind[] = $params['film'];
+            $types .= "s";
+            $paramsToBind[] = "film";
         }
 
         if(!empty($params['ISBN'])){
@@ -426,7 +459,7 @@ class ApiHandler{
     function getUserLoanedMedia(int $userId){
         $getLoanedMediaQuery = "SELECT media.*, checked_out.checkout_date, checked_out.return_date 
                                 FROM media 
-                                INNER JOIN checked_out ON media.id = checked_out.m_id 
+                                INNER JOIN checked_out ON media.id = checked_out.c_id 
                                 WHERE checked_out.user_id = ?";
         $stmt = $this->conn->prepare($getLoanedMediaQuery);
         $stmt->bind_param("i", $userId);
@@ -444,7 +477,7 @@ class ApiHandler{
     }
     // add check if media is allready checked out
     function checkoutMedia(int $userId, int $mediaId){
-        $checkoutQuery = "INSERT INTO checked_out (user_id, m_id, checkout_date, return_date) VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 3 WEEK))";
+        $checkoutQuery = "INSERT INTO checked_out (user_id, c_id, checkout_date, return_date) VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 3 WEEK))";
         $stmt = $this->conn->prepare($checkoutQuery);
         $stmt->bind_param("ii", $userId, $mediaId);
 
@@ -462,7 +495,7 @@ class ApiHandler{
     function returnMedia($mediaId, $userId){
         $getReturnDateQuery = "SELECT media.*, checked_out.checkout_date, checked_out.return_date 
                                 FROM media 
-                                INNER JOIN checked_out ON media.id = checked_out.m_id 
+                                INNER JOIN checked_out ON media.id = checked_out.c_id 
                                 WHERE media.id = ?";
         $returnDateStmt = $this->conn->prepare($getReturnDateQuery);
         $returnDateStmt->bind_param("i", $mediaId);
@@ -476,7 +509,7 @@ class ApiHandler{
         $returnDateStmt->close();
 
         if($row['return_date'] > date("Y-m-d")){
-            $returnQuery = "DELETE FROM checked_out WHERE m_id = ?";
+            $returnQuery = "DELETE FROM checked_out WHERE c_id = ?";
             $stmt = $this->conn->prepare($returnQuery);
 
             $stmt->bind_param("i", $id);
@@ -490,7 +523,7 @@ class ApiHandler{
         }
         else if($row['return_date'] <= date("Y-m-d")){
 
-            $deleteCheckoutQuery = "DELETE FROM checked_out WHERE m_id = ?";
+            $deleteCheckoutQuery = "DELETE FROM checked_out WHERE c_id = ?";
             $stmt = $this->conn->prepare($deleteCheckoutQuery);
 
             

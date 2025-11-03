@@ -15,14 +15,15 @@ if (isset($mediaData['title'], $mediaData['SABSignum'], $mediaData['ISBN'])) {
     $author = $mediaData['author'] ?? "";
     $SABSignum = $mediaData['SABSignum'];
     $price = intval($mediaData['price']) ?? 0;
-    $book = isset($mediaData['book']) ? (bool)$mediaData['book'] : false;
-    $audioBook = isset($mediaData['audioBook']) ? (bool)$mediaData['audioBook'] : false;
-    $film = isset($mediaData['film']) ? (bool)$mediaData['film'] : false;
+    //$book = isset($mediaData['book']) ? (bool)$mediaData['book'] : false;
+    //$audioBook = isset($mediaData['audioBook']) ? (bool)$mediaData['audioBook'] : false;
+    //$film = isset($mediaData['film']) ? (bool)$mediaData['film'] : false;
+    $mediaType = $mediaData['mediaType'];
     $ISBN = $mediaData['ISBN'];
     $quantity = $mediaData['quantity'] ?? 1;
     $IMDB = $mediaData['IMDB'] ?? "";
 
-    echo $apiHandler->addMedia($title, $author, $SABSignum, $price, $book, $audioBook, $film, $ISBN, $quantity, $IMDB);
+    echo $apiHandler->addMedia($title, $author, $SABSignum, $price, $mediaType, $ISBN, $quantity, $IMDB);
 } else {
     echo "Missing required fields: title, SABSignum, or ISBN.";
 }

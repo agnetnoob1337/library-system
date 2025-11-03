@@ -65,23 +65,23 @@ document.addEventListener('DOMContentLoaded', function() {
         var price = document.getElementById("price").value;
         var IMDB = document.getElementById("imdb").value;
 
-        if(mediaType == "book") {
-            var film = false;
-            var audioBook = false;
-            var book = true;
-        }
-        else if(mediaType == "audiobook") {
-            var film = false;
-            var audioBook = true;
-            var book = false;
-        }
-        else if(mediaType == "film") {
-            var film = true;
-            var audioBook = false;
-            var book = false;
-        }
+        // if(mediaType == "book") {
+        //     var film = false;
+        //     var audioBook = false;
+        //     var book = true;
+        // }
+        // else if(mediaType == "audiobook") {
+        //     var film = false;
+        //     var audioBook = true;
+        //     var book = false;
+        // }
+        // else if(mediaType == "film") {
+        //     var film = true;
+        //     var audioBook = false;
+        //     var book = false;
+        // }
         
-        console.log({ signum, title, author, ISBN, film, audioBook, book, price, quantity });
+        console.log({ signum, title, author, ISBN, price, quantity, mediaType });
         fetch("./php/add-media.php", {
             method: "POST",
             headers: {
@@ -92,12 +92,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: title,
                 author: author,
                 ISBN: ISBN,
-                film: film,
-                audioBook: audioBook,
-                book: book,
+                //film: film,
+                //audioBook: audioBook,
+                //book: book,
                 price: price,
                 quantity: quantity,
-                IMDB: IMDB
+                IMDB: IMDB,
+                mediaType: mediaType
             })
         }).then(response => {
             return response.text();
@@ -474,11 +475,13 @@ function loadAllMedia(){
     while (availableFilmsTableBody.rows.length > 0) {
         availableFilmsTableBody.deleteRow(0);
     }
-
-    fetch("./php/get-media.php?availableOnly=true&filter=book",).then(response => {
+    fetch("./php/get-media.php?availableOnly=true&filter=bok",).then(response => {
         return response.json();
+        // console.log("Response status:", response.status);
+        // return response.text(); // byt till text för att se RÅ output
     }).then(data => {
-        console.log(data); 
+        //console.log(data);
+
 
         var mediaTableBody = document.getElementById("available-books-table-body");
 
@@ -520,7 +523,7 @@ function loadAllMedia(){
         });
     });
 
-    fetch("./php/get-media.php?availableOnly=true&filter=audiobook",).then(response => {
+    fetch("./php/get-media.php?availableOnly=true&filter=ljudbok",).then(response => {
         return response.json();
     }).then(data => {
         console.log(data); 
