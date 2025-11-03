@@ -99,19 +99,45 @@ class ApiHandler{
         // Base query
         $query = "SELECT media.*";
         // If showing unavailable (checked out) items, include user info
-        if ($onlyAvailable === false) {
-            $query .= ", checked_out.*, users.id AS user_id, users.username";
-        }
+        // if ($onlyAvailable === false) {
+        //     $query .= ", checked_out.*, users.id AS user_id, users.username 
+        //                 "
+        //     ;
+        // }
 
         $query .= " FROM media";
 
         // Join if needed
         if ($onlyAvailable === false) {
-            $query .= " INNER JOIN checked_out ON checked_out.m_id = media.id
-                        INNER JOIN users ON checked_out.user_id = users.id";
+            $query = "
+            SELECT media.*, checked_out.*, users.id AS user_id, users.username
+            FROM media
+            INNER JOIN checked_out ON checked_out.m_id = media.id
+            INNER JOIN users ON checked_out.user_id = users.id
+            WHERE 1=1";
+        }
+        else if ($onlyAvailable === true) {
+            $query = " 
+                    SELECT media.*
+                    FROM media
+                    WHERE NOT EXISTS (
+                    SELECT 1 
+                    FROM checked_out 
+                    WHERE checked_out.m_id = media.id)";
+        }else {
+            // All media (available + checked out)
+            $query = "
+                SELECT media.*,
+                       CASE 
+                           WHEN checked_out.m_id IS NULL THEN 'available' 
+                           ELSE 'checked_out' 
+                       END AS status
+                FROM media
+                LEFT JOIN checked_out ON checked_out.m_id = media.id
+            ";
         }
 
-        $query .= " WHERE 1=1"; // base condition
+        //$query .= " WHERE 1=1"; // base condition
 
         // Apply filters
         if (!empty($filters['filter'])) {

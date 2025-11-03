@@ -123,12 +123,12 @@ async function loadAllMedia(mediaType = '', ) {
 
 
     if(mediaType === '') {
-        var apiCall = "./php/get-media.php";
+        var apiCall = "./php/get-media.php?availableOnly=true";
     }
     else{
-        var apiCall = "./php/get-media.php?filter=" + mediaType;
+        var apiCall = "./php/get-media.php?availableOnly=true&filter=" + mediaType;
     }
-    fetch(apiCall,).then(response => {
+    fetch(apiCall).then(response => {
         return response.json();
     }).then(data => {
         console.log(data); 
@@ -170,7 +170,7 @@ async function loadAllMedia(mediaType = '', ) {
             var typeCell = document.createElement("td");
             if(media.book) {
                 typeCell.textContent = "Bok";
-            } else if(media.audioBook) {
+            } else if(media.audiobook) {
                 typeCell.textContent = "Ljudbok";
             } else if(media.film) {
                 typeCell.textContent = "Film";

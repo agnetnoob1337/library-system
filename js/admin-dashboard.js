@@ -196,10 +196,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     mediaEditDialog.addEventListener("close", (e) => {
-        var checkboxes = document.querySelectorAll('#available-media-table-body input[type="checkbox"]:checked');
+        var checkboxes = document.querySelectorAll('.available-media-checkbox:checked');
         var mediaId = checkboxes[0].value;
         e.preventDefault();
-
+        console.log("ye");
         const signum = mediaEditForm.categoryEditDialog.value;
         const title = mediaEditForm.titleEditDialog.value;
         const author = mediaEditForm.authorEditDialog.value;
@@ -514,15 +514,7 @@ function loadAllMedia(){
             categoryCell.textContent = media.SAB_signum;
             row.appendChild(categoryCell);
 
-            var typeCell = document.createElement("td");
-            if(media.book) {
-                typeCell.textContent = "Bok";
-            } else if(media.audioBook) {
-                typeCell.textContent = "Ljudbok";
-            } else if(media.film) {
-                typeCell.textContent = "Film";
-            }
-            row.appendChild(typeCell);
+
 
             mediaTableBody.appendChild(row);
         });
@@ -567,15 +559,6 @@ function loadAllMedia(){
             categoryCell.textContent = media.SAB_signum;
             row.appendChild(categoryCell);
 
-            var typeCell = document.createElement("td");
-            if(media.book) {
-                typeCell.textContent = "Bok";
-            } else if(media.audioBook) {
-                typeCell.textContent = "Ljudbok";
-            } else if(media.film) {
-                typeCell.textContent = "Film";
-            }
-            row.appendChild(typeCell);
 
             mediaTableBody.appendChild(row);
         });
@@ -613,22 +596,12 @@ function loadAllMedia(){
             row.appendChild(priceCell);
 
             var isbnCell = document.createElement("td");
-            isbnCell.textContent = media.ISBN;
+            isbnCell.textContent = media.IMDB;
             row.appendChild(isbnCell);
 
             var categoryCell = document.createElement("td");
             categoryCell.textContent = media.SAB_signum;
             row.appendChild(categoryCell);
-
-            var typeCell = document.createElement("td");
-            if(media.book) {
-                typeCell.textContent = "Bok";
-            } else if(media.audioBook) {
-                typeCell.textContent = "Ljudbok";
-            } else if(media.film) {
-                typeCell.textContent = "Film";
-            }
-            row.appendChild(typeCell);
 
             mediaTableBody.appendChild(row);
         });
@@ -683,15 +656,15 @@ function loadAllMedia(){
             categoryCell.textContent = media.SAB_signum;
             row.appendChild(categoryCell);
 
-            var typeCell = document.createElement("td");
+            var mediaTypeCell = document.createElement("td");
             if(media.book) {
-                typeCell.textContent = "Book";
+                mediaTypeCell.textContent = "Bok";
             } else if(media.audioBook) {
-                typeCell.textContent = "Audiobook";
+                mediaTypeCell.textContent = "Ljudbok";
             } else if(media.film) {
-                typeCell.textContent = "Film";
+                mediaTypeCell.textContent = "Film";
             }
-            row.appendChild(typeCell);
+            row.appendChild(mediaTypeCell);
 
             var lentbyCell = document.createElement("td");
             lentbyCell.textContent = media.username;

@@ -11,8 +11,6 @@ body {
   .login-box {
     background: white;
     padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     width: 300px;
   }
 
@@ -33,7 +31,7 @@ body {
     padding: 10px;
     margin-bottom: 15px;
     border: 1px solid #ccc;
-    border-radius: 5px;
+    
   }
 
   .login-box button {
@@ -42,7 +40,7 @@ body {
     background: #007BFF;
     color: white;
     border: none;
-    border-radius: 5px;
+    
     cursor: pointer;
     font-size: 16px;
   }

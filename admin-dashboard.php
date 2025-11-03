@@ -163,7 +163,7 @@ if (!isset($_SESSION['user_id'])) {
                             <th></th>
                             <th>Titel</th>
                             <th>Författare</th>
-                            <th>Pris</th>
+                            <th>Pris (SEK)</th>
                             <th>ISBN</th>
                             <th>SAB Kategori</th>
                             <th>Media typ</th>
