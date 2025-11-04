@@ -132,7 +132,7 @@ class ApiHandler{
 
 
     //availableOnly a tri-state: true (only available), false (only unavailable), null (all)
-    function getMedia(array $filters = [], $onlyAvailable = false) {
+    function getMedia(array $filters = [], $onlyAvailable = false) {    
         $params = [];
         $types = "";
 
@@ -153,8 +153,7 @@ class ApiHandler{
             SELECT media.*, checked_out.*, users.id AS user_id, users.username
             FROM media
             INNER JOIN checked_out ON checked_out.c_id = media.id
-            INNER JOIN users ON checked_out.user_id = users.id
-            WHERE 1=1";
+            INNER JOIN users ON checked_out.user_id = users.id WHERE 1=1";
         }
         else if ($onlyAvailable === true) {
             $query = " 
@@ -173,8 +172,7 @@ class ApiHandler{
                            ELSE 'checked_out' 
                        END AS status
                 FROM media
-                LEFT JOIN checked_out ON checked_out.c_id = media.id
-            ";
+                LEFT JOIN checked_out ON checked_out.c_id = media.id";
         }
 
         //$query .= " WHERE 1=1"; // base condition
@@ -192,6 +190,50 @@ class ApiHandler{
         if (!empty($filters['filter'])) {
             $query .= " AND mediatype = ?";
             $params[] = $filters['filter'];
+            $types .= "s";
+        }
+        $searchFor = false;
+        // checks if the user search for something specific
+        if (!empty($filters['searchFor']) && $filters['searchTerm'] !== "") {
+            switch ($filters['searchFor']) {
+                case 'title':
+                    $query .= " AND media.title LIKE ?";
+                    $params[] = "%" . $filters['searchTerm'] . "%";
+                    $types .= "s";
+                    $searchFor = true;
+                    break;
+        
+                case 'author':
+                    $query .= " AND media.author LIKE ?";
+                    $params[] = "%" . $filters['searchTerm'] . "%";
+                    $types .= "s";
+                    $searchFor = true;
+                    break;
+        
+                case 'category':
+                    $query .= " AND media.SAB_signum IN (
+                        SELECT signum FROM sab_categories WHERE category LIKE ?
+                    )";
+                    $params[] = "%" . $filters['searchTerm'] . "%";
+                    $types .= "s";
+                    $searchFor = true;
+                    break;
+            }
+        }
+        // if the user doesnt search for something specific, get the values for everything
+        if(!$searchFor){
+            $query .= " AND (media.title LIKE ?";
+            $params[] = "%" . $filters['searchTerm'] . "%";
+            $types .= "s";
+
+            $query .= " OR media.author LIKE ?";
+            $params[] = "%" . $filters['searchTerm'] . "%";
+            $types .= "s";
+
+            $query .= " OR media.SAB_signum IN (
+                SELECT signum FROM sab_categories WHERE category LIKE ?
+            ))";
+            $params[] = "%" . $filters['searchTerm'] . "%";
             $types .= "s";
         }
 
@@ -238,7 +280,6 @@ class ApiHandler{
             $media[] = $row;
         }
         $stmt->close();
-
         return json_encode($media);
     }
 
