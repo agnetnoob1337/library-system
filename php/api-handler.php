@@ -116,6 +116,19 @@ class ApiHandler{
             return json_encode(["error" => $e->getMessage()]);
         }
     }
+    //Add copy based on existing media
+    function addCopy(int $mediaId, int $quantity = 1) {
+        $this->conn->begin_transaction();
+        $addCopyQuery = "INSERT INTO copy (media_id) VALUES(?)";
+        $stmt = $this->conn->prepare($addCopyQuery);
+        $stmt->bind_param("i", $mediaId);
+        for ($i = 0; $i < $quantity; $i++) {
+            $stmt->execute();
+        }
+        $this->conn->commit();
+        $stmt->close();
+        return json_encode("New copy added successfully.");
+    }
 
 
     //availableOnly a tri-state: true (only available), false (only unavailable), null (all)
