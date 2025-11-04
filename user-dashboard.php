@@ -27,9 +27,18 @@ if (!isset($_SESSION['user_id'])) {
             <label for="media-type">Media typ:</label>
             <select name="media-type" id="media-type">
                 <option value="">Alla typer</option>
-                <option value="book">Bok</option>
-                <option value="audiobook">Ljudbok</option>
+                <option value="bok">Bok</option>
+                <option value="ljudbok">Ljudbok</option>
                 <option value="film">Film</option>
+            </select>
+        </div>
+        <div>
+            <label for="media-type">Sök efter:</label>
+            <select name="media-type" id="search-for">
+                <option value="">Allt</option>
+                <option value="title">Titel</option>
+                <option value="category">Kategori</option>
+                <option value="author">Författare/regissör</option>
             </select>
         </div>
 

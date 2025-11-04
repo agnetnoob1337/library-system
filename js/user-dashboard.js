@@ -74,11 +74,16 @@ document.addEventListener('DOMContentLoaded', function() {
             alert("Snälla välj ett media att återlämna och klicka igen.");
         }
     });
-
-    document.getElementById("media-type").addEventListener("change", function() {
-        var selectedType = this.value;
-        loadAllMedia(selectedType);
-    });
+    document.getElementById("media-type").addEventListener("change", triggerMediaLoad);
+    document.getElementById("search-for").addEventListener("change", triggerMediaLoad);
+    document.getElementById("search-input").addEventListener("input", triggerMediaLoad);
+    function triggerMediaLoad() {
+        const selectedType = document.getElementById("media-type").value;
+        const searchForWord = document.getElementById("search-for").value;
+        const searchTerm = document.getElementById("search-input").value;
+        loadAllMedia(selectedType, searchForWord, searchTerm);
+    }
+    
 
     document.getElementById("search-input").addEventListener("input", function() {
         var filter = this.value.toLowerCase();
@@ -95,8 +100,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-async function loadAllMedia(mediaType = '', ) {
+async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
     // Function to load all media items of a specific type
+    console.log(mediaType, searchFor, searchTerm);
     var SABCategories = [];
     await fetch('./php/get-sab-categories.php').then(response => {
         return response.json();
@@ -121,13 +127,21 @@ async function loadAllMedia(mediaType = '', ) {
         lateReturnsTableBody.deleteRow(0);
     }
 
+    let params = new URLSearchParams();
+    params.append("availableOnly", "true");
 
-    if(mediaType === '') {
-        var apiCall = "./php/get-media.php?availableOnly=true";
-    }
-    else{
-        var apiCall = "./php/get-media.php?availableOnly=true&filter=" + mediaType;
-    }
+    if (mediaType) params.append("filter", mediaType);
+    if (searchFor) params.append("searchFor", searchFor);
+    if (searchTerm) params.append("searchTerm", searchTerm);
+
+    let apiCall = "./php/get-media.php?" + params.toString();
+    
+    // if(mediaType === '' && searchTerm.length == 0) {
+    //     var apiCall = "./php/get-media.php?availableOnly=true";
+    // }
+    // else{
+    //     var apiCall = "./php/get-media.php?availableOnly=true&filter=" + mediaType + "&searchFor=" + searchFor + "&searchTerm=" + searchTerm;
+    // }
     fetch(apiCall).then(response => {
         return response.json();
     }).then(data => {
