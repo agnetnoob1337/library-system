@@ -112,6 +112,33 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    //Adds copies of media
+    document.getElementById("add-copy").addEventListener("click", () => {
+        var mediaId = document.getElementById("media-id").value;
+        var quantityCopy = document.getElementById("quantity-copy").value;
+
+        fetch("./php/add-copy.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                mediaId: mediaId,
+                quantityCopy: quantityCopy
+
+            })
+        }).then(response => {
+            return response.text();
+        }).then(data => {
+            console.log(data);
+            alert("Media added successfully!");
+            loadAllMedia();
+        }).catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred while adding media.");
+        });
+    });
+
     const tables = ["available-books-table-body", "available-audiobook-table-body", "available-film-table-body"];
     tables.forEach(tableId => {
         document.getElementById(tableId).addEventListener("change", (e) => {
