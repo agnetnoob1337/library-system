@@ -134,26 +134,29 @@ document.addEventListener('DOMContentLoaded', function() {
             alert("Vänligen välj en mediekopia att ta bort.");
             return;
         }
-        var mediaId = selectedCheckbox.value;
 
-        fetch("./php/delete-copy.php", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                mediaId: mediaId
-            })
-        }).then(response => {
-            return response.text();
-        }).then(data => {
-            console.log(data);
-            alert("Media copy removed successfully!");
-            location.reload();
-        }).catch(error => {
-            console.error("Error:", error);
-            alert("An error occurred while removing media copy.");
-        });
+        if (confirm('Delete this media copy?')) {
+            var mediaId = selectedCheckbox.value;
+
+            fetch("./php/delete-copy.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    mediaId: mediaId
+                })
+            }).then(response => {
+                return response.text();
+            }).then(data => {
+                console.log(data);
+                alert("Media copy removed successfully!");
+                location.reload();
+            }).catch(error => {
+                console.error("Error:", error);
+                alert("An error occurred while removing media copy.");
+            });
+        }
     });
 
     document.getElementById("edit-copy").addEventListener('click', () => {
