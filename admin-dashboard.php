@@ -99,7 +99,7 @@ if (!isset($_SESSION['user_id'])) {
 
                 
                 <input type="number" id="quantity-copy" min="1" value="1" placeholder="Quantity">
-                <input type="text" id="media-id" placeholder="Grej">
+                <input type="text" id="media-id" placeholder="Media id">
                 <button id="add-copy">Lägg till kopia av media</button>
             </div>
     
