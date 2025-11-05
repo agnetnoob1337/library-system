@@ -33,13 +33,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
         data.forEach(user => {
             var row = document.createElement("tr");
-
             var selectionCell = document.createElement("td");
-            var checkbox = document.createElement("input");
-            checkbox.classList.add("user-checkbox");
-            checkbox.type = "checkbox";
-            checkbox.value = user.id;
-            selectionCell.appendChild(checkbox);
+
+            var deleteUserButton = document.createElement("button")
+            deleteUserButton.value = user.id;
+            deleteUserButton.textContent = "Ta bort";
+            deleteUserButton.addEventListener("click", function() { deleteUser(this); });
+            selectionCell.appendChild(deleteUserButton);
+
+            var editUserButton = document.createElement("button")
+            editUserButton.value = user.id;
+            editUserButton.textContent = "Redigera";
+            editUserButton.addEventListener("click", function() { editUser(this); });
+            selectionCell.appendChild(editUserButton);
+
             row.appendChild(selectionCell);
 
             var usernameCell = document.createElement("td");
@@ -168,15 +175,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     //#region reomove a copy
-    document.getElementById("remove-copy").addEventListener('click', () => {
-        var selectedCheckbox = document.querySelector('.available-media-checkbox:checked');
-        if(!selectedCheckbox) {
-            alert("Vänligen välj en mediekopia att ta bort.");
-            return;
-        }
+    function removeCopy(e) {
+        const mediaId = e.value;
+
 
         if (confirm('Delete this media copy?')) {
-            var mediaId = selectedCheckbox.value;
 
             fetch("./php/delete-copy.php", {
                 method: "POST",
@@ -197,56 +200,73 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert("An error occurred while removing media copy.");
             });
         }
-    });
-    //#endregion
+    };
+   //#endregion
 
     //#region edit a copy
-    document.getElementById("edit-copy").addEventListener('click', () => {
-        var checkboxes = document.querySelectorAll('.available-media-checkbox:checked');
-        if(checkboxes.length !== 1) {
-            alert("Vänligen välj en mediekopia att redigera.");
-            return;
-        }
-
-        const mediaId = checkboxes[0].value;
-
-        fetch("./php/get-media.php?id=" + mediaId).then(response => {
-            return response.json();
-        }).then(data => {
-            console.log(data);
-            var media = data[0];
-            mediaEditForm.categoryEditDialog.value = media.SAB_signum;
-            mediaEditForm.titleEditDialog.value = media.title;
-            mediaEditForm.authorEditDialog.value = media.author;
-            mediaEditForm.priceEditDialog.value = media.price;
-            if(media.book) {
-                var IMDBInput = document.getElementById("imdbEditDialog");
-                var IMDBLabel = document.getElementById("imdbEditDialogLabel");
-                IMDBLabel.style.display = "none";
-                IMDBInput.style.display = "none";
-                mediaEditForm.isbnEditDialog.value = media.ISBN;
-                mediaEditForm.mediaTypeEditDialog.value = "book";
-            } else if(media.audioBook) {
-                mediaEditForm.mediaTypeEditDialog.value = "audiobook";
-            } else if(media.film) {
-                var isbnInput = document.getElementById("isbnEditDialog");
-                var isbnLabel = document.getElementById("isbnEditDialogLabel");
-                isbnLabel.style.display = "none";
-                isbnInput.style.display = "none";
-                mediaEditForm.mediaTypeEditDialog.value = "film";
-                mediaEditForm.imdbEditDialog.value = media.IMDB;
-            }
-
-        });
-        mediaEditDialog.showModal();
-    });
-    //#endregion
-
+    function editCopy(e) {
+        const mediaId = e.value; // from the "Edit" button
+    
+        // Store the current mediaId on the dialog element itself
+        mediaEditDialog.dataset.mediaId = mediaId;
+    
+        fetch(`./php/get-media.php?availableOnly=true&id=${mediaId}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                const media = data[0];
+    
+                // Fill form values
+                mediaEditForm.categoryEditDialog.value = media.SAB_signum;
+                mediaEditForm.titleEditDialog.value = media.title;
+                mediaEditForm.authorEditDialog.value = media.author;
+                mediaEditForm.priceEditDialog.value = media.price;
+    
+                // Reset hidden fields first
+                document.getElementById("isbnEditDialog").style.display = "flex";
+                document.getElementById("isbnEditDialogLabel").style.display = "flex";
+                document.getElementById("imdbEditDialog").style.display = "flex";
+                document.getElementById("imdbEditDialogLabel").style.display = "flex";
+    
+                if (media.book) {
+                    // Hide IMDb fields for books
+                    document.getElementById("imdbEditDialog").style.display = "none";
+                    document.getElementById("imdbEditDialogLabel").style.display = "none";
+                    mediaEditForm.isbnEditDialog.value = media.ISBN;
+                    mediaEditForm.mediaTypeEditDialog.value = "book";
+                } 
+                else if (media.audioBook) {
+                    mediaEditForm.mediaTypeEditDialog.value = "audiobook";
+                    mediaEditForm.isbnEditDialog.value = media.ISBN;
+                } 
+                else if (media.film) {
+                    // Hide ISBN fields for films
+                    document.getElementById("isbnEditDialog").style.display = "none";
+                    document.getElementById("isbnEditDialogLabel").style.display = "none";
+                    mediaEditForm.mediaTypeEditDialog.value = "film";
+                    mediaEditForm.imdbEditDialog.value = media.IMDB;
+                }
+    
+                // Open the dialog
+                mediaEditDialog.showModal();
+            })
+            .catch(error => {
+                console.error("Error fetching media:", error);
+                alert("Could not load media for editing.");
+            });
+    }
+   //#endregion
+    
+    
+    // When dialog closes, save changes if submitted
     mediaEditDialog.addEventListener("close", (e) => {
-        var checkboxes = document.querySelectorAll('.available-media-checkbox:checked');
-        var mediaId = checkboxes[0].value;
         e.preventDefault();
-        console.log("ye");
+    
+        if (mediaEditDialog.returnValue !== "submit") return; // only on submit
+    
+        const mediaId = mediaEditDialog.dataset.mediaId; // get stored ID
+        console.log("Editing media with ID:", mediaId);
+    
         const signum = mediaEditForm.categoryEditDialog.value;
         const title = mediaEditForm.titleEditDialog.value;
         const author = mediaEditForm.authorEditDialog.value;
@@ -254,53 +274,40 @@ document.addEventListener('DOMContentLoaded', function() {
         const price = mediaEditForm.priceEditDialog.value;
         const mediaType = mediaEditForm.mediaTypeEditDialog.value;
         const IMDB = mediaEditForm.imdbEditDialog.value;
-
-        if(mediaType == "book") {
-            var film = false;
-            var audioBook = false;
-            var book = true;
-        }
-        else if(mediaType == "audiobook") {
-            var film = false;
-            var audioBook = true;
-            var book = false;
-        }
-        else if(mediaType == "film") {
-            var film = true;
-            var audioBook = false;
-            var book = false;
-        }
-
-        if(mediaEditDialog.returnValue === "submit") {
-            fetch("./php/edit-media.php", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    id: mediaId,
-                    SABSignum: signum,
-                    title: title,
-                    author: author,
-                    ISBN: ISBN,
-                    film: film,
-                    audioBook: audioBook,
-                    book: book,
-                    price: price,
-                    IMDB: IMDB
-                })
-            }).then(response => {
-                return response.text();
-            }).then(data => {
-                console.log(data);
-                alert("Media edited successfully!");
-                loadAllMedia();
-            }).catch(error => {
-                console.error("Error:", error);
-                alert("An error occurred while editing media.");
-            });
-        }
+    
+        let film = false, audioBook = false, book = false;
+        if (mediaType === "book") book = true;
+        else if (mediaType === "audiobook") audioBook = true;
+        else if (mediaType === "film") film = true;
+    
+        fetch("./php/edit-media.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                id: mediaId,
+                SABSignum: signum,
+                title,
+                author,
+                ISBN,
+                film,
+                audioBook,
+                book,
+                price,
+                IMDB
+            })
+        })
+        .then(response => response.text())
+        .then(data => {
+            console.log(data);
+            alert("Media edited successfully!");
+            loadAllMedia();
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred while editing media.");
+        });
     });
+    
 
     //#region return a media
     document.getElementById("return-media").addEventListener('click', () => {
@@ -351,8 +358,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addUserDialog.showModal();
     });
 
-    addUserDialog.addEventListener("close", (e) => {
-        e.preventDefault();
+    addUserDialog.addEventListener("close", () => {
         const username = userAddForm.username.value;
         const password = userAddForm.password.value;
         const mail = userAddForm.mail.value;
@@ -391,14 +397,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const userEditForm = document.getElementById("user-edit-form");
     const editUserDialog = document.getElementById("edit-user-dialog");
 
-    //#region edit a user
-    document.getElementById("edit-user").addEventListener('click', (e) => {
-        const selectedCheckbox = document.querySelector('#users-table-body input[type="checkbox"]:checked');
-        if(!selectedCheckbox) {
-            alert("Vänligen välj en användare att redigera.");
-            return;
-        }
-        const userId = selectedCheckbox.value;
+
+      //#region edit a user
+    function editUser(e) {
+        const userId = e.value;
+
 
         fetch("./php/get-users.php?userId=" + userId).then(response => {
             return response.json();
@@ -409,8 +412,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         editUserDialog.dataset.userId = userId;
         editUserDialog.showModal();
-    });
-    //#endregion
+    };
+      //#endregion
+
 
     editUserDialog.addEventListener("close", (e) => {
         e.preventDefault();
@@ -458,14 +462,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    //#region delete a user
-    document.getElementById("delete-user").addEventListener('click', () => {
-        const selectedCheckbox = document.querySelector('#users-table-body input[type="checkbox"]:checked');
-        if(!selectedCheckbox) {
-            alert("Vänligen välj en användare att ta bort.");
-            return;
-        }
-        const userId = selectedCheckbox.value;
+
+      //#region delete a user
+    function deleteUser(e) {
+        const userId = e.value;
 
         if(!confirm("Är du säker på att du vill ta bort denna användare?")) {
             return;
@@ -489,8 +489,10 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error("Error:", error);
             alert("An error occurred while deleting user.");
         });
-    });
-    //#endregion
+
+    };
+      //#endregion
+
 
     //#region media type styling
     document.getElementById("media-type").addEventListener("change", (e) => {
@@ -519,6 +521,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     //#endregion 
+
 
     //#region trigger loads after admin inputs
     document.getElementById("search-for-book").addEventListener("change", triggerMediaLoadBook);
@@ -590,8 +593,11 @@ document.addEventListener('DOMContentLoaded', function() {
     //#endregion
 });
 
+
+    
 async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
-    if(searchTerm){
+
+  if(searchTerm){
         console.log(mediaType, searchFor, searchTerm);
         var SABCategories = [];
         await fetch('./php/get-sab-categories.php').then(response => {
@@ -804,7 +810,6 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
         //#endregion
         //return;
     }
-
     const lentMediaTable = document.getElementById("unavailable-media-table-body");
     const availableBooksTableBody = document.getElementById("available-books-table-body");
     const availableAudioBooksTableBody = document.getElementById("available-audiobook-table-body");
@@ -836,17 +841,28 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
 
             var mediaTableBody = document.getElementById("available-books-table-body");
 
-            data.forEach(media => {
-                var row = document.createElement("tr");
 
-                var selectionCell = document.createElement("td");
-                var checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.classList.add("available-media-checkbox");
-                checkbox.value = media.id;
-                selectionCell.appendChild(checkbox);
-                row.appendChild(selectionCell);
+        data.forEach(media => {
+            var row = document.createElement("tr");
+            var selectionCell = document.createElement("td");
 
+            var deleteCopyButton = document.createElement("button");
+            deleteCopyButton.textContent = "Ta bort";
+            deleteCopyButton.value = media.id;
+            deleteCopyButton.addEventListener("click", function(e) { 
+                removeCopy(e.target);
+            });
+            selectionCell.appendChild(deleteCopyButton);
+
+            var editCopyButton = document.createElement("button");
+            editCopyButton.textContent = "Redigera";
+            editCopyButton.value = media.id;
+            editCopyButton.addEventListener("click", function(e) { 
+                editCopy(e.target);
+            });
+            selectionCell.appendChild(editCopyButton);
+
+            row.appendChild(selectionCell);
 
                 var titleCell = document.createElement("td");
                 titleCell.textContent = media.title;
@@ -901,16 +917,27 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
 
             var mediaTableBody = document.getElementById("available-audiobook-table-body");
 
-            data.forEach(media => {
-                var row = document.createElement("tr");
+        data.forEach(media => {
+            var row = document.createElement("tr");
+            var selectionCell = document.createElement("td");
 
-                var selectionCell = document.createElement("td");
-                var checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.classList.add("available-media-checkbox");
-                checkbox.value = media.id;
-                selectionCell.appendChild(checkbox);
-                row.appendChild(selectionCell);
+            var deleteCopyButton = document.createElement("button");
+            deleteCopyButton.textContent = "Ta bort";
+            deleteCopyButton.value = media.id;
+            deleteCopyButton.addEventListener("click", function(e) { 
+                removeCopy(e.target);
+            });
+            selectionCell.appendChild(deleteCopyButton);
+
+            var editCopyButton = document.createElement("button");
+            editCopyButton.textContent = "Redigera";
+            editCopyButton.value = media.id;
+            editCopyButton.addEventListener("click", function(e) { 
+                editCopy(e.target);
+            });
+            selectionCell.appendChild(editCopyButton);
+
+            row.appendChild(selectionCell);
 
 
                 var titleCell = document.createElement("td");
@@ -964,16 +991,27 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
 
             var mediaTableBody = document.getElementById("available-film-table-body");
 
-            data.forEach(media => {
-                var row = document.createElement("tr");
+        data.forEach(media => {
+            var row = document.createElement("tr");
+            var selectionCell = document.createElement("td");
 
-                var selectionCell = document.createElement("td");
-                var checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.classList.add("available-media-checkbox");
-                checkbox.value = media.id;
-                selectionCell.appendChild(checkbox);
-                row.appendChild(selectionCell);
+            var deleteCopyButton = document.createElement("button");
+            deleteCopyButton.textContent = "Ta bort";
+            deleteCopyButton.value = media.id;
+            deleteCopyButton.addEventListener("click", function(e) { 
+                removeCopy(e.target);
+            });
+            selectionCell.appendChild(deleteCopyButton);
+
+            var editCopyButton = document.createElement("button");
+            editCopyButton.textContent = "Redigera";
+            editCopyButton.value = media.id;
+            editCopyButton.addEventListener("click", function(e) { 
+                editCopy(e.target);
+            });
+            selectionCell.appendChild(editCopyButton);
+
+            row.appendChild(selectionCell);
 
 
                 var titleCell = document.createElement("td");
@@ -1100,3 +1138,6 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
     
 }
 
+}
+
+});
