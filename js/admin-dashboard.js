@@ -30,13 +30,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
         data.forEach(user => {
             var row = document.createElement("tr");
-
             var selectionCell = document.createElement("td");
-            var checkbox = document.createElement("input");
-            checkbox.classList.add("user-checkbox");
-            checkbox.type = "checkbox";
-            checkbox.value = user.id;
-            selectionCell.appendChild(checkbox);
+
+            var deleteButton = document.createElement("button")
+            deleteButton.value = user.id;
+            deleteButton.textContent = "Ta bort";
+            deleteButton.addEventListener("click", function() { deleteUser(this); });
+            selectionCell.appendChild(deleteButton);
+
+            var editButton = document.createElement("button")
+            editButton.value = user.id;
+            editButton.textContent = "Redigera";
+            editButton.addEventListener("click", function() { editUser(this); });
+            selectionCell.appendChild(editButton);
+
             row.appendChild(selectionCell);
 
             var usernameCell = document.createElement("td");
@@ -298,8 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addUserDialog.showModal();
     });
 
-    addUserDialog.addEventListener("close", (e) => {
-        e.preventDefault();
+    addUserDialog.addEventListener("close", () => {
         const username = userAddForm.username.value;
         const password = userAddForm.password.value;
         const isAdmin = userAddForm.isAdmin.checked;
@@ -334,13 +340,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const userEditForm = document.getElementById("user-edit-form");
     const editUserDialog = document.getElementById("edit-user-dialog");
 
-    document.getElementById("edit-user").addEventListener('click', (e) => {
-        const selectedCheckbox = document.querySelector('#users-table-body input[type="checkbox"]:checked');
-        if(!selectedCheckbox) {
-            alert("Vänligen välj en användare att redigera.");
-            return;
-        }
-        const userId = selectedCheckbox.value;
+    function editUser(e) {
+        const userId = e.value;
 
         fetch("./php/get-users.php?userId=" + userId).then(response => {
             return response.json();
@@ -351,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         editUserDialog.dataset.userId = userId;
         editUserDialog.showModal();
-    });
+    };
 
     editUserDialog.addEventListener("close", (e) => {
         e.preventDefault();
@@ -399,13 +400,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    document.getElementById("delete-user").addEventListener('click', () => {
-        const selectedCheckbox = document.querySelector('#users-table-body input[type="checkbox"]:checked');
-        if(!selectedCheckbox) {
-            alert("Vänligen välj en användare att ta bort.");
-            return;
-        }
-        const userId = selectedCheckbox.value;
+    function deleteUser(e) {
+        const userId = e.value;
 
         if(!confirm("Är du säker på att du vill ta bort denna användare?")) {
             return;
@@ -429,7 +425,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error("Error:", error);
             alert("An error occurred while deleting user.");
         });
-    });
+    };
 
     document.getElementById("media-type").addEventListener("change", (e) => {
         var selectedType = e.target.value;
@@ -490,12 +486,21 @@ function loadAllMedia(){
 
         data.forEach(media => {
             var row = document.createElement("tr");
-
             var selectionCell = document.createElement("td");
+
+            /*
             var checkbox = document.createElement("input");
             checkbox.type = "checkbox";
             checkbox.classList.add("available-media-checkbox");
             checkbox.value = media.id;
+*/
+            var bookDeleteButton = document.createElement("button");
+            bookDeleteButton.textContent = "Redigera";
+            bookDeleteButton.value = media.id;
+            bookDeleteButton.addEventListener("click", function() { 
+                deleteMedia(this);
+            });
+
             selectionCell.appendChild(checkbox);
             row.appendChild(selectionCell);
 
