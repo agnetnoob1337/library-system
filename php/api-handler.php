@@ -39,7 +39,6 @@ class ApiHandler{
         return json_encode($categories);
     }
 
-
     function addMedia(string $title, string $author = "", string $SABSignum, int $price = 0, $mediatype, string $ISBN, int $quantity = 1, string $IMDB = ""){
 
         // if ($book + $audioBook + $film < 1) {
@@ -150,10 +149,26 @@ class ApiHandler{
         // Join if needed
         if ($onlyAvailable === false) {
             $query = "
-            SELECT media.*, checked_out.*, users.id AS user_id, users.username
-            FROM media
-            INNER JOIN checked_out ON checked_out.c_id = media.id
-            INNER JOIN users ON checked_out.user_id = users.id WHERE 1=1";
+                SELECT 
+                    media.id AS media_id,
+                    media.title,
+                    media.author,
+                    media.ISBN,
+                    media.SAB_signum,
+                    media.mediatype,
+                    media.price,
+                    copy.id AS copy_id,
+                    checked_out.id AS checkout_id,
+                    checked_out.checkout_date,
+                    checked_out.return_date,
+                    users.id AS user_id,
+                    users.username
+                FROM media
+                INNER JOIN copy ON copy.media_id = media.id
+                INNER JOIN checked_out ON checked_out.c_id = copy.id
+                INNER JOIN users ON checked_out.user_id = users.id
+                WHERE 1=1
+            ";
         }
         else if ($onlyAvailable === true) {
             $query = " 
@@ -281,6 +296,41 @@ class ApiHandler{
         }
         $stmt->close();
         return json_encode($media);
+    }
+
+    function getCopiesOfMedia(array $filters = [], $onlyAvailable = false){
+        $params = [];
+        $types = "";
+        $query = "SELECT copy.id FROM copy";
+    
+        if(!empty($filters['id'])){
+            $query .= " WHERE media_id = ? AND NOT EXISTS (
+                SELECT 1 
+                FROM checked_out 
+                WHERE checked_out.c_id = copy.id
+                    AND checked_out.return_date >= NOW()
+            )";
+            $params[] = $filters['id'];
+            $types .= "i";
+        }
+    
+        $stmt = $this->conn->prepare($query);
+        if(!empty($params)){
+            $stmt->bind_param($types, ...$params);
+        }
+    
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $copies = [];
+        while($row = $result->fetch_assoc()){
+            $copies[] = $row;
+        }
+        $stmt->close();
+    
+        return json_encode([
+            'count' => count($copies),
+            'copies' => $copies
+        ]);
     }
 
     function editMedia($params){
@@ -511,10 +561,13 @@ class ApiHandler{
     }
 
     function getUserLoanedMedia(int $userId){
-        $getLoanedMediaQuery = "SELECT media.*, checked_out.checkout_date, checked_out.return_date 
-                                FROM media 
-                                INNER JOIN checked_out ON media.id = checked_out.c_id 
-                                WHERE checked_out.user_id = ?";
+        $getLoanedMediaQuery = "
+            SELECT media.*, copy.id AS copy_id, checked_out.checkout_date, checked_out.return_date, checked_out.c_id
+            FROM checked_out
+            INNER JOIN copy ON checked_out.c_id = copy.id
+            INNER JOIN media ON copy.media_id = media.id
+            WHERE checked_out.user_id = ?
+        ";
         $stmt = $this->conn->prepare($getLoanedMediaQuery);
         $stmt->bind_param("i", $userId);
         $stmt->execute();
@@ -531,83 +584,97 @@ class ApiHandler{
     }
     // add check if media is allready checked out
     function checkoutMedia(int $userId, int $mediaId){
-        $checkoutQuery = "INSERT INTO checked_out (user_id, c_id, checkout_date, return_date) VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 3 WEEK))";
-        $stmt = $this->conn->prepare($checkoutQuery);
-        $stmt->bind_param("ii", $userId, $mediaId);
-
-        if ($stmt->execute()) {
-            $stmt->close();
-            return json_encode("Media checked out successfully.");
-        } else {
-            $stmt->close();
-            return json_encode(["error" => "Error: " . $stmt->error]);
-        }
-
-    }
-
-
-    function returnMedia($mediaId, $userId){
-        $getReturnDateQuery = "SELECT media.*, checked_out.checkout_date, checked_out.return_date 
-                                FROM media 
-                                INNER JOIN checked_out ON media.id = checked_out.c_id 
-                                WHERE media.id = ?";
-        $returnDateStmt = $this->conn->prepare($getReturnDateQuery);
-        $returnDateStmt->bind_param("i", $mediaId);
-
-        $returnDateStmt->execute();
-        
-        $result = $returnDateStmt->get_result();
-        
+        $stmt = $this->conn->prepare("
+            SELECT id 
+            FROM copy 
+            WHERE media_id = ? 
+            AND NOT EXISTS (
+                SELECT 1 
+                FROM checked_out 
+                WHERE checked_out.c_id = copy.id
+                    AND checked_out.return_date >= NOW()
+            )
+            LIMIT 1
+        ");
+        $stmt->bind_param("i", $mediaId);
+        $stmt->execute();
+        $result = $stmt->get_result();
         $row = $result->fetch_assoc();
-           
-        $returnDateStmt->close();
-
-        if($row['return_date'] > date("Y-m-d")){
-            $returnQuery = "DELETE FROM checked_out WHERE c_id = ?";
-            $stmt = $this->conn->prepare($returnQuery);
-
-            $stmt->bind_param("i", $id);
-            $stmt->execute();
-
-            $stmt->close();
-
+        if (!$row) {
             return json_encode([
-                'returned' => $mediaId,     
+                "success" => false,
+                "message" => "Ingen tillgänglig kopia av detta media."
             ]);
         }
-        else if($row['return_date'] <= date("Y-m-d")){
-
-            $deleteCheckoutQuery = "DELETE FROM checked_out WHERE c_id = ?";
-            $stmt = $this->conn->prepare($deleteCheckoutQuery);
-
-            
-            $stmt->bind_param("i", $mediaId);
-            $stmt->execute();
-
+        $checkoutQuery = "INSERT INTO checked_out (user_id, c_id, checkout_date, return_date) VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 3 WEEK))";
+        $stmt = $this->conn->prepare($checkoutQuery);
+        $stmt->bind_param("ii", $userId, $row['id']);
+    
+        if ($stmt->execute()) {
             $stmt->close();
-
-            $deleteFromMediaQuery = "DELETE FROM media WHERE id = ?";
-            $stmt = $this->conn->prepare($deleteFromMediaQuery);
-
-            $stmt->bind_param("i", $mediaId);
-            $stmt->execute();
-            
+            return json_encode([
+                "success" => true,
+                "message" => "Media checked out successfully."
+            ]);
+        } else {
             $stmt->close();
+            return json_encode([
+                "success" => false,
+                "message" => "Error: " . $stmt->error
+            ]);
+        }
+    }
 
-            $addToLateReturnsQuery = "INSERT INTO late_returns (media_title, fee, user_id, date_of_return) VALUES (?, ?, ?, NOW())";
-            
-            $stmt = $this->conn->prepare($addToLateReturnsQuery);
-
+    function returnMedia($mediaId, $userId, int $copyId){
+        // Hämta lånad kopia
+        $query = "
+            SELECT media.*, copy.id AS copy_id, checked_out.checkout_date, checked_out.return_date
+            FROM checked_out
+            INNER JOIN copy ON checked_out.c_id = copy.id
+            INNER JOIN media ON copy.media_id = media.id
+            WHERE checked_out.c_id = ? AND checked_out.user_id = ?
+            LIMIT 1
+        ";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("ii", $copyId, $userId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+    
+        if (!$row) {
+            return json_encode(["error" => "No borrowed copy found."]);
+        }
+    
+        $copyId = $row['copy_id'];
+        $today = date("Y-m-d");
+    
+        // Ta bort lånet
+        $deleteCheckoutQuery = "DELETE FROM checked_out WHERE c_id = ? AND user_id = ?";
+        $stmt = $this->conn->prepare($deleteCheckoutQuery);
+        $stmt->bind_param("ii", $copyId, $userId);
+        $stmt->execute();
+        $stmt->close();
+    
+        if($row['return_date'] >= $today){
+            return json_encode([
+                'success' => true,
+                'returned media_id' => $row['id'],
+                'copy_id' => $copyId
+            ]);
+        } else {
+            // Försenad återlämning, lägg till i late_returns
+            $addLateQuery = "INSERT INTO late_returns (media_title, fee, user_id, date_of_return) VALUES (?, ?, ?, NOW())";
+            $stmt = $this->conn->prepare($addLateQuery);
             $fee = $row["price"] * 1.5;
             $stmt->bind_param("sdi", $row["title"], $fee, $userId);
-
             $stmt->execute();
             $stmt->close();
-             
-
-            return json_encode(["error" => "Return date has passed. Please contact the library staff for further assistance."]);
+    
+            return json_encode([
+                "success" => false,
+                "error" => "Return date has passed. Fee recorded."
+            ]);
         }
-
     }
 
     function getLateReturns(int $userId){

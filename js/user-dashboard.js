@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
         var selectedCheckbox = document.querySelector(".available-media-checkbox:checked");
         if (selectedCheckbox) {
             var mediaId = selectedCheckbox.value;
-            
             fetch(`./php/media-checkout.php?mediaId=${mediaId}`, {
                 method: 'POST',
                 headers: {
@@ -49,25 +48,25 @@ document.addEventListener('DOMContentLoaded', function() {
         var selectedCheckbox = document.querySelector(".borrowed-media-checkbox:checked");
         if (selectedCheckbox) {
             var mediaId = selectedCheckbox.value;
-            
+            var copyId = selectedCheckbox.dataset.copyId;
+            console.log(mediaId);
             fetch(`./php/media-return.php`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ mediaIds: mediaId })
-
-            }).then(response => {
-                return response.json();
-            }).then(data => {
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mediaId: Number(mediaId), copyId: Number(copyId) })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('return response', data);
                 loadAllMedia();
                 if (data.success) {
                     alert("Media returned successfully!");
                     location.reload();
                 } else {
-                    alert("Error returning media: " + data.message);
+                    alert("Error returning media: " + (data.message || data.error || "Unknown error"));
                 }
-            }).catch(error => {
+            })
+            .catch(error => {
                 console.error('Error during return:', error);
             });
         } else {
@@ -192,6 +191,19 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             // }
             row.appendChild(typeCell);
 
+            
+            fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
+            .then(response => response.json())
+            .then(data => {
+                var cellCopiesAvailable = document.createElement("td");
+                cellCopiesAvailable.textContent = "";
+                data.copies.forEach(copy => {
+                    cellCopiesAvailable.textContent += "("+copy.id+"), ";
+                });
+                row.appendChild(cellCopiesAvailable);
+            })
+            .catch(error => console.error("Error:", error));
+
             availableMediaTableBody.appendChild(row);
         });
     }).catch(error => {
@@ -211,6 +223,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             checkbox.type = "checkbox";
             checkbox.classList.add("borrowed-media-checkbox");
             checkbox.value = loan.id;
+            checkbox.dataset.copyId = loan.c_id;
             selectCell.appendChild(checkbox);
             row.appendChild(selectCell);
 
@@ -247,6 +260,10 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             dueDateCell.textContent = loan.return_date;
             row.appendChild(dueDateCell);
 
+            var cellCopyID = document.createElement("td");
+            cellCopyID.textContent = loan.c_id;
+            row.appendChild(cellCopyID);
+
             borrowedMediaTableBody.appendChild(row);
         });
     }).catch(error => {
@@ -272,6 +289,19 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             var feeCell = document.createElement("td");
             feeCell.textContent = loan.fee + " kr";
             row.appendChild(feeCell);
+
+            
+            // fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
+            // .then(response => response.json())
+            // .then(data => {
+            //     var cellCopiesAvailable = document.createElement("td");
+            //     cellCopiesAvailable.textContent = "";
+            //     data.copies.forEach(copy => {
+            //         cellCopiesAvailable.textContent += "("+copy.id+"), ";
+            //     });
+            //     row.appendChild(cellCopiesAvailable);
+            // })
+            // .catch(error => console.error("Error:", error));
 
             lateReturnsTableBody.appendChild(row);
         });

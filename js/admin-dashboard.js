@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const mediaEditDialog = document.getElementById("media-edit-dialog");
     const mediaEditForm = document.getElementById("media-edit-form");
 
+    //#region get sab categories
     fetch("./php/get-sab-categories.php").then(response => {
         return response.json();
     }).then(data => {
@@ -18,9 +19,11 @@ document.addEventListener('DOMContentLoaded', function() {
             mediaEditForm.categoryEditDialog.appendChild(option.cloneNode(true));
         });
     });
+    //#endregion
 
     loadAllMedia();
 
+    //#region get users
     fetch("./php/get-users.php").then(response => {
         return response.json();
     }).then(data => {
@@ -54,7 +57,9 @@ document.addEventListener('DOMContentLoaded', function() {
             usersTableBody.appendChild(row);
         });
     });
-
+    //#endregion
+    
+    //#region add media
     document.getElementById("add-media").addEventListener('click', () => {
         var signum = document.getElementById("category").value;
         var title = document.getElementById("title").value;
@@ -111,8 +116,9 @@ document.addEventListener('DOMContentLoaded', function() {
             alert("An error occurred while adding media.");
         });
     });
+    //#endregion
 
-    //Adds copies of media
+    //#region Adds copies of media
     document.getElementById("add-copy").addEventListener("click", () => {
         var mediaId = document.getElementById("media-id").value;
         var quantityCopy = document.getElementById("quantity-copy").value;
@@ -138,7 +144,9 @@ document.addEventListener('DOMContentLoaded', function() {
             alert("An error occurred while adding media.");
         });
     });
+    //#endregion
 
+    
     const tables = ["available-books-table-body", "available-audiobook-table-body", "available-film-table-body"];
     tables.forEach(tableId => {
         document.getElementById(tableId).addEventListener("change", (e) => {
@@ -155,6 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    //#region reomove a copy
     document.getElementById("remove-copy").addEventListener('click', () => {
         var selectedCheckbox = document.querySelector('.available-media-checkbox:checked');
         if(!selectedCheckbox) {
@@ -185,7 +194,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+    //#endregion
 
+    //#region edit a copy
     document.getElementById("edit-copy").addEventListener('click', () => {
         var checkboxes = document.querySelectorAll('.available-media-checkbox:checked');
         if(checkboxes.length !== 1) {
@@ -225,6 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         mediaEditDialog.showModal();
     });
+    //#endregion
 
     mediaEditDialog.addEventListener("close", (e) => {
         var checkboxes = document.querySelectorAll('.available-media-checkbox:checked');
@@ -286,30 +298,39 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    //#region return a media
     document.getElementById("return-media").addEventListener('click', () => {
-        var checkboxes = document.querySelectorAll('#unavailable-media-table-body input[type="checkbox"]:checked');
-        var mediaIds = Array.from(checkboxes).map(checkbox => checkbox.value);
-
-        fetch("./php/media-return.php", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                mediaIds: mediaIds
-            })
-        }).then(response => {
-            return response.text();
-        }).then(data => {
-            console.log(data);
-            alert("Media returned successfully!");
-            location.reload();
-        }).catch(error => {
-            console.error("Error:", error);
-            alert("An error occurred while returning media.");
-        });
+        //var checkboxes = document.querySelectorAll('#unavailable-media-table-body input[type="checkbox"]:checked');
+        var selectedCheckbox = document.querySelector('#unavailable-media-table-body input[type="checkbox"]:checked');
+        //var mediaIds = Array.from(checkboxes).map(checkbox => checkbox.value);
+        if(selectedCheckbox){
+            //var mediaId = Array.from(checkboxes).map(checkbox => Number(checkbox.value));
+            //var copyId = Array.from(checkboxes).map(checkbox => Number(checkbox.dataset.copyId));
+            var mediaId = selectedCheckbox.value;
+            var copyId = selectedCheckbox.dataset.copyId;
+            var userId = selectedCheckbox.dataset.userId;
+            fetch("./php/media-return.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    mediaId: Number(mediaId), copyId: Number(copyId), userId: Number(userId)
+                })
+            }).then(response => {
+                return response.text();
+            }).then(data => {
+                console.log(data);
+                alert("Media returned successfully!");
+                location.reload();
+            }).catch(error => {
+                console.error("Error:", error);
+                alert("An error occurred while returning media.");
+            });
+        }
     });
-
+    //#endregion
+    
     document.querySelectorAll(".menu-item[data-target]").forEach(btn => {
         btn.addEventListener("click", (e) => {
             document.querySelectorAll(".menu-item").forEach(item => item.classList.remove("active"));
@@ -361,6 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const userEditForm = document.getElementById("user-edit-form");
     const editUserDialog = document.getElementById("edit-user-dialog");
 
+    //#region edit a user
     document.getElementById("edit-user").addEventListener('click', (e) => {
         const selectedCheckbox = document.querySelector('#users-table-body input[type="checkbox"]:checked');
         if(!selectedCheckbox) {
@@ -379,6 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
         editUserDialog.dataset.userId = userId;
         editUserDialog.showModal();
     });
+    //#endregion
 
     editUserDialog.addEventListener("close", (e) => {
         e.preventDefault();
@@ -426,6 +449,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    //#region delete a user
     document.getElementById("delete-user").addEventListener('click', () => {
         const selectedCheckbox = document.querySelector('#users-table-body input[type="checkbox"]:checked');
         if(!selectedCheckbox) {
@@ -457,7 +481,9 @@ document.addEventListener('DOMContentLoaded', function() {
             alert("An error occurred while deleting user.");
         });
     });
+    //#endregion
 
+    //#region media type styling
     document.getElementById("media-type").addEventListener("change", (e) => {
         var selectedType = e.target.value;
         var imdbInput = document.getElementById("imdb");
@@ -483,6 +509,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         }
     });
+    //#endregion 
 
 });
 
@@ -505,6 +532,8 @@ function loadAllMedia(){
     while (availableFilmsTableBody.rows.length > 0) {
         availableFilmsTableBody.deleteRow(0);
     }
+
+    //#region get available books
     fetch("./php/get-media.php?availableOnly=true&filter=bok",).then(response => {
         return response.json();
         // console.log("Response status:", response.status);
@@ -547,12 +576,30 @@ function loadAllMedia(){
             categoryCell.textContent = media.SAB_signum;
             row.appendChild(categoryCell);
 
+            var mediaIDCell = document.createElement("td");
+            mediaIDCell.textContent = media.id;
+            row.appendChild(mediaIDCell);
+
+            fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
+            .then(response => response.json())
+            .then(data => {
+                var cellCopiesAvailable = document.createElement("td");
+                cellCopiesAvailable.textContent = "";
+                data.copies.forEach(copy => {
+                    cellCopiesAvailable.textContent += "("+copy.id+"), ";
+                });
+                row.appendChild(cellCopiesAvailable);
+            })
+            .catch(error => console.error("Error:", error));
+
 
 
             mediaTableBody.appendChild(row);
         });
     });
+    //#endregion
 
+    //#region get available audiobooks
     fetch("./php/get-media.php?availableOnly=true&filter=ljudbok",).then(response => {
         return response.json();
     }).then(data => {
@@ -592,11 +639,28 @@ function loadAllMedia(){
             categoryCell.textContent = media.SAB_signum;
             row.appendChild(categoryCell);
 
+            var mediaIDCell = document.createElement("td");
+            mediaIDCell.textContent = media.id;
+            row.appendChild(mediaIDCell);
+
+            fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
+            .then(response => response.json())
+            .then(data => {
+                var cellCopiesAvailable = document.createElement("td");
+                cellCopiesAvailable.textContent = "";
+                data.copies.forEach(copy => {
+                    cellCopiesAvailable.textContent += "("+copy.id+"), ";
+                });
+                row.appendChild(cellCopiesAvailable);
+            })
+            .catch(error => console.error("Error:", error));
 
             mediaTableBody.appendChild(row);
         });
     });
+    //#endregion
 
+    //#region get available movies
     fetch("./php/get-media.php?availableOnly=true&filter=film",).then(response => {
         return response.json();
     }).then(data => {
@@ -636,11 +700,28 @@ function loadAllMedia(){
             categoryCell.textContent = media.SAB_signum;
             row.appendChild(categoryCell);
 
+            var mediaIDCell = document.createElement("td");
+            mediaIDCell.textContent = media.id;
+            row.appendChild(mediaIDCell);
+
+            fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
+            .then(response => response.json())
+            .then(data => {
+                var cellCopiesAvailable = document.createElement("td");
+                cellCopiesAvailable.textContent = "";
+                data.copies.forEach(copy => {
+                    cellCopiesAvailable.textContent += "("+copy.id+"), ";
+                });
+                row.appendChild(cellCopiesAvailable);
+            })
+            .catch(error => console.error("Error:", error));
+
             mediaTableBody.appendChild(row);
         });
     });
+    //#endregion
 
-    //loaned media
+    //#region get loaned media
     fetch("./php/get-media.php?availableOnly=false",).then(response => {
         return response.json();
     }).then(data => {
@@ -651,7 +732,7 @@ function loadAllMedia(){
         if(data.length === 0) {
             var row = document.createElement("tr");
             var noDataCell = document.createElement("td");
-            noDataCell.colSpan = 9;
+            noDataCell.colSpan = 10;
             noDataCell.textContent = "Inget är utlånat.";
             row.appendChild(noDataCell);
             mediaTableBody.appendChild(row);
@@ -665,7 +746,9 @@ function loadAllMedia(){
             var selectionCell = document.createElement("td");
             var checkbox = document.createElement("input");
             checkbox.type = "checkbox";
-            checkbox.value = media.m_id;
+            checkbox.value = media.media_id;
+            checkbox.dataset.copyId = media.copy_id;
+            checkbox.dataset.userId = media.user_id;
             selectionCell.appendChild(checkbox);
             row.appendChild(selectionCell);
 
@@ -708,9 +791,14 @@ function loadAllMedia(){
             returnDateCell.textContent = media.return_date;
             row.appendChild(returnDateCell);
 
+            var copyIDCell = document.createElement("td");
+            copyIDCell.textContent = media.copy_id;
+            row.appendChild(copyIDCell);
+
             mediaTableBody.appendChild(row);
         });
     });
+    //#endregion
 
     
 

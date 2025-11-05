@@ -55,6 +55,7 @@ if (!isset($_SESSION['user_id'])) {
                     <th>IMDB ID</th>
                     <th>SAB Kategori</th>
                     <th>Media typ</th>
+                    <th>Kopior tillgängliga (ID)</th>
                 </tr>
             </thead>
             <tbody id="available-media-table-body">
@@ -72,6 +73,7 @@ if (!isset($_SESSION['user_id'])) {
                     <th>SAB Kategori</th>
                     <th>Media typ</th>
                     <th>Återlämningsdatum</th>
+                    <th>Kopia ID</th>
                 </tr>
             </thead>
             <tbody id="borrowed-media-table-body">
