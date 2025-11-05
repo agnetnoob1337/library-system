@@ -100,8 +100,6 @@ if (!isset($_SESSION['user_id'])) {
     
             <div>
                 <h3>Inte utlånade</h3>
-                    <button id="remove-copy">Ta bort kopia</button>
-                    <button id="edit-copy">Redigera media kopia</button>
                 <table>
                     <h3>Böcker</h3>
                     <thead>
