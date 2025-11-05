@@ -443,12 +443,12 @@ class ApiHandler{
 
     }
 
-    function addUser(string $username, string $password, int $is_admin = 0){
-        $addUserQuery = "INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)";
+    function addUser(string $username, string $password, string $mail, int $is_admin = 0){
+        $addUserQuery = "INSERT INTO users (username, password, is_admin, mail) VALUES (?, ?, ?, ?)";
         $stmt = $this->conn->prepare($addUserQuery);
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-        $stmt->bind_param("ssi", $username, $hashedPassword, $is_admin);
+        $stmt->bind_param("ssis", $username, $hashedPassword, $is_admin, $mail);
         if ($stmt->execute()) {
             $stmt->close();
             return json_encode("New user added successfully.");
@@ -530,7 +530,7 @@ class ApiHandler{
 
     function getUsers(int $userId = 0){
         if($userId !== 0){
-            $getUserQuery = "SELECT id, username, is_admin FROM users WHERE id = ?";
+            $getUserQuery = "SELECT id, username, is_admin, mail FROM users WHERE id = ?";
             $stmt = $this->conn->prepare($getUserQuery);
             $stmt->bind_param("i", $userId);
             $stmt->execute();
@@ -543,7 +543,7 @@ class ApiHandler{
             return json_encode($user);
         }
         else{
-            $getUserQuery = "SELECT id, username, is_admin FROM users";
+            $getUserQuery = "SELECT id, username, is_admin, mail FROM users";
             $stmt = $this->conn->prepare($getUserQuery);
             $stmt->execute();
     
@@ -558,6 +558,15 @@ class ApiHandler{
             return json_encode($users);
         }
             
+    }
+
+    function changePassword($username, $newPassword){
+        
+
+        $changePasswordQuery = "UPDATE users WHERE username = ? SET password = ?";
+        $stmt = $this->conn->prepare($changePasswordQuery);
+        $stmt->bind_param("ss", $username, $newPassword); 
+        $stmt->execute();
     }
 
     function getUserLoanedMedia(int $userId){
@@ -692,5 +701,13 @@ class ApiHandler{
         $stmt->close();
 
         return json_encode($lateReturns);
+    }
+
+    function generateToken(){
+        $token = bin2hex(random_bytes(16));
+        $stmt = $this->conn->prepare("UPDATE users SET reset_token = ? WHERE id = ?");
+        $stmt->bind_param("si", $token, $_SESSION['user_id']);
+        $stmt->execute();
+        return $token;
     }
 }

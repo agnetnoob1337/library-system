@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     loadAllMedia();
 
+    //#region handle media checkout
     document.getElementById("checkout").addEventListener("click", function() {
         var selectedCheckbox = document.querySelector(".available-media-checkbox:checked");
         if (selectedCheckbox) {
@@ -43,7 +44,9 @@ document.addEventListener('DOMContentLoaded', function() {
             alert("Snälla välj ett media att låna och klicka igen.");
         }
     });
+    //#endregion
 
+    //#region return media handler
     document.getElementById("return").addEventListener("click", function() {
         var selectedCheckbox = document.querySelector(".borrowed-media-checkbox:checked");
         if (selectedCheckbox) {
@@ -73,6 +76,9 @@ document.addEventListener('DOMContentLoaded', function() {
             alert("Snälla välj ett media att återlämna och klicka igen.");
         }
     });
+    //#endregion
+
+    //#region updates search after new input
     document.getElementById("media-type").addEventListener("change", triggerMediaLoad);
     document.getElementById("search-for").addEventListener("change", triggerMediaLoad);
     document.getElementById("search-input").addEventListener("input", triggerMediaLoad);
@@ -82,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const searchTerm = document.getElementById("search-input").value;
         loadAllMedia(selectedType, searchForWord, searchTerm);
     }
-    
+    //#endregion
 
     document.getElementById("search-input").addEventListener("input", function() {
         var filter = this.value.toLowerCase();
@@ -134,13 +140,9 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
     if (searchTerm) params.append("searchTerm", searchTerm);
 
     let apiCall = "./php/get-media.php?" + params.toString();
-    
-    // if(mediaType === '' && searchTerm.length == 0) {
-    //     var apiCall = "./php/get-media.php?availableOnly=true";
-    // }
-    // else{
-    //     var apiCall = "./php/get-media.php?availableOnly=true&filter=" + mediaType + "&searchFor=" + searchFor + "&searchTerm=" + searchTerm;
-    // }
+
+
+    //#region display available media
     fetch(apiCall).then(response => {
         return response.json();
     }).then(data => {
@@ -209,7 +211,9 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
     }).catch(error => {
         console.error('Error fetching media data:', error);
     });
+    //#endregion
 
+    //#region display user loans
     fetch("./php/get-user-loans.php").then(response => {
         return response.json();
     }).then(data => {
@@ -269,7 +273,9 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
     }).catch(error => {
         console.error('Error fetching user loans:', error);
     });
-
+    //#endregion
+    
+    //#region display late returns
     fetch("./php/get-late-returns.php").then(response => {
         return response.json();
     }
@@ -308,6 +314,6 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
     }).catch(error => {
         console.error('Error fetching late returns:', error);
     });
-
+    //#endregion
 
 };

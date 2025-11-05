@@ -109,6 +109,16 @@ if (!isset($_SESSION['user_id'])) {
                     <button id="edit-copy">Redigera media kopia</button>
                 <table>
                     <h3>Böcker</h3>
+                    <input type="search" id="search-input-book" placeholder="Sök media...">
+                    <div>
+                        <label for="media-type">Sök efter:</label>
+                        <select name="media-type" id="search-for-book">
+                            <option value="">Allt</option>
+                            <option value="title">Titel</option>
+                            <option value="category">Kategori</option>
+                            <option value="author">Författare</option>
+                        </select>
+                    </div>
                     <thead>
                         <tr>
                             <th></th>
@@ -127,6 +137,16 @@ if (!isset($_SESSION['user_id'])) {
 
                 <table>
                     <h3>Ljudböcker</h3>
+                    <input type="search" id="search-input-audiobook" placeholder="Sök media...">
+                    <div>
+                        <label for="media-type">Sök efter:</label>
+                        <select name="media-type" id="search-for-audiobook">
+                            <option value="">Allt</option>
+                            <option value="title">Titel</option>
+                            <option value="category">Kategori</option>
+                            <option value="author">Författare</option>
+                        </select>
+                    </div>
                     <thead>
                         <tr>
                             <th></th>
@@ -145,6 +165,16 @@ if (!isset($_SESSION['user_id'])) {
 
                 <table>
                     <h3>Filmer</h3>
+                    <input type="search" id="search-input-movie" placeholder="Sök media...">
+                    <div>
+                        <label for="media-type">Sök efter:</label>
+                        <select name="media-type" id="search-for-movie">
+                            <option value="">Allt</option>
+                            <option value="title">Titel</option>
+                            <option value="category">Kategori</option>
+                            <option value="author">Regissör</option>
+                        </select>
+                    </div>
                     <thead>
                         <tr>
                             <th></th>
@@ -199,6 +229,11 @@ if (!isset($_SESSION['user_id'])) {
                 </label>
                 <input type="password" id="password" name="password" required />
                 <br>
+                <label for="mail">
+                    Mail:
+                </label>
+                <input type="mail" id="mail" name="mail" required />
+                <br>
                 <label for="is-admin">
                     Är admin:
                 </label>
@@ -243,6 +278,7 @@ if (!isset($_SESSION['user_id'])) {
                         <tr>
                             <th></th>
                             <th>Användarnamn</th>
+                            <th>Mail</th>
                             <th>Är admin</th>
                         </tr>
                     </thead>
