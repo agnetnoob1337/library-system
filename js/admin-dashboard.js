@@ -1138,6 +1138,4 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
     
 }
 
-}
 
-});
