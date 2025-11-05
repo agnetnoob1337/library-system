@@ -134,3 +134,7 @@ dialog form menu button {
     width: 6rem;
     padding: 0.5rem;
 }
+
+#logout-button {
+    max-height: 10px;
+}

@@ -18,7 +18,7 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="./css/admin-dashboard.css">
 </head>
 <body data-section="media">
-    <a href="php/logout.php">Logga ut</a>
+    <a id="logout-button" href="php/logout.php">Logga ut</a>
     <menu>
         <div class="menu-item active" data-target="media">
             <h3>Media</h3>
@@ -60,14 +60,14 @@ if (!isset($_SESSION['user_id'])) {
                     <label for="categoryEditDialog">
                         SAB Kategori:
                     </label>
-                    <select name="categoryEditDialog" id="">
+                    <select name="categoryEditDialog" id="categoryEditDialog">
 
                     </select>
 
                     <label for="mediaTypeEditDialog">
                         Media typ:
                     </label>
-                    <select name="mediaTypeEditDialog" id="">
+                    <select name="mediaTypeEditDialog" id="mediaTypeEditDialog">
                         <option value="book">Bok</option>
                         <option value="audiobook">Ljudbok</option>
                         <option value="film">Film</option>
@@ -96,6 +96,11 @@ if (!isset($_SESSION['user_id'])) {
     
                 <input type="number" id="quantity" min="1" value="1" placeholder="Quantity">
                 <button id="add-media">Lägg till media</button>
+
+                
+                <input type="number" id="quantity-copy" min="1" value="1" placeholder="Quantity">
+                <input type="text" id="media-id" placeholder="Media id">
+                <button id="add-copy">Lägg till kopia av media</button>
             </div>
     
             <div>
@@ -110,7 +115,8 @@ if (!isset($_SESSION['user_id'])) {
                             <th>Pris (SEK)</th>
                             <th>ISBN</th>
                             <th>SAB Kategori</th>
-                            
+                            <th>Media ID</th>
+                            <th>Kopior tillgängliga (ID)</th>
                         </tr>
                     </thead>
                     <tbody id="available-books-table-body">
@@ -127,7 +133,8 @@ if (!isset($_SESSION['user_id'])) {
                             <th>Pris (SEK)</th>
                             <th>ISBN</th>
                             <th>SAB Kategori</th>
-                            
+                            <th>Media ID</th>
+                            <th>Kopior tillgängliga (ID)</th>
                         </tr>
                     </thead>
                     <tbody id="available-audiobook-table-body">
@@ -144,7 +151,8 @@ if (!isset($_SESSION['user_id'])) {
                             <th>Pris (SEK)</th>
                             <th>IMDB</th>
                             <th>SAB Kategori</th>
-                            
+                            <th>Media ID</th>
+                            <th>Kopior tillgängliga (ID)</th>
                         </tr>
                     </thead>
                     <tbody id="available-film-table-body">
@@ -167,6 +175,7 @@ if (!isset($_SESSION['user_id'])) {
                             <th>Media typ</th>
                             <th>Lånad av</th>
                             <th>Utlånad till</th>
+                            <th>Kopia ID</th>
                         </tr>
                     </thead>
                         <tbody id="unavailable-media-table-body">
@@ -204,17 +213,17 @@ if (!isset($_SESSION['user_id'])) {
                 <label for="username">
                     Användarnamn:
                 </label>
-                <input type="text" id="username" name="username" />
+                <input type="text" class="username" name="username" />
                 <br>
                 <label for="password">
                     Lösenord:
                 </label>
-                <input type="password" id="password" name="password" />
+                <input type="password" class="password" name="password" />
                 <br>
                 <label for="is-admin">
                     Är admin:
                 </label>
-                <input type="checkbox" id="is-admin" name="isAdmin"/>
+                <input type="checkbox" class="is-admin" name="isAdmin"/>
                     
                 <menu>
                     <button value="submit">Submit</button>

@@ -27,9 +27,18 @@ if (!isset($_SESSION['user_id'])) {
             <label for="media-type">Media typ:</label>
             <select name="media-type" id="media-type">
                 <option value="">Alla typer</option>
-                <option value="book">Bok</option>
-                <option value="audiobook">Ljudbok</option>
+                <option value="bok">Bok</option>
+                <option value="ljudbok">Ljudbok</option>
                 <option value="film">Film</option>
+            </select>
+        </div>
+        <div>
+            <label for="media-type">Sök efter:</label>
+            <select name="media-type" id="search-for">
+                <option value="">Allt</option>
+                <option value="title">Titel</option>
+                <option value="category">Kategori</option>
+                <option value="author">Författare/regissör</option>
             </select>
         </div>
 
@@ -46,6 +55,7 @@ if (!isset($_SESSION['user_id'])) {
                     <th>IMDB ID</th>
                     <th>SAB Kategori</th>
                     <th>Media typ</th>
+                    <th>Kopior tillgängliga (ID)</th>
                 </tr>
             </thead>
             <tbody id="available-media-table-body">
@@ -63,6 +73,7 @@ if (!isset($_SESSION['user_id'])) {
                     <th>SAB Kategori</th>
                     <th>Media typ</th>
                     <th>Återlämningsdatum</th>
+                    <th>Kopia ID</th>
                 </tr>
             </thead>
             <tbody id="borrowed-media-table-body">
