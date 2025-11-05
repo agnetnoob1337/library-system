@@ -16,7 +16,7 @@
         <label for="passwordNew">Bekräfta nytt lösenord</label>
         <input type="password" class="passwordNewConfirm" name="passwordNewConfirm" required>
 
-        <input type="hidden" name="token" id="" value=<?php echo $_GET['token'] ?>>
+        <input type="hidden" name="token" id="" value="<?php echo $_GET['token'] ?>">
         
         <button type="submit">Ändra lösenord</button>
       </form>
