@@ -15,9 +15,12 @@ if (isset($mediaData['id']) && !empty($mediaData['id'])) {
         'author' => $mediaData['author'] ?? null,
         'SABSignum' => $mediaData['SABSignum'] ?? null,
         'price' => isset($mediaData['price']) ? intval($mediaData['price']) : null,
+        /*
         'book' => isset($mediaData['book']) ? (bool)$mediaData['book'] : null,
         'audioBook' => isset($mediaData['audioBook']) ? (bool)$mediaData['audioBook'] : null,
         'film' => isset($mediaData['film']) ? (bool)$mediaData['film'] : null,
+        */
+        'mediaType' => $mediaData['mediaType'] ?? null,
         'ISBN' => $mediaData['ISBN'] ?? null,
         'IMDB' => $mediaData['IMDB'] ?? null,
     ];

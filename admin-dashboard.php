@@ -68,8 +68,8 @@ if (!isset($_SESSION['user_id'])) {
                         Media typ:
                     </label>
                     <select name="mediaTypeEditDialog" id="mediaTypeEditDialog">
-                        <option value="book">Bok</option>
-                        <option value="audiobook">Ljudbok</option>
+                        <option value="bok">Bok</option>
+                        <option value="ljudbok">Ljudbok</option>
                         <option value="film">Film</option>
                     </select>
 

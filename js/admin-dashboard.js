@@ -221,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 mediaEditForm.titleEditDialog.value = media.title;
                 mediaEditForm.authorEditDialog.value = media.author;
                 mediaEditForm.priceEditDialog.value = media.price;
+                mediaEditForm.mediaTypeEditDialog.value = media.mediatype;
     
                 // Reset hidden fields first
                 document.getElementById("isbnEditDialog").style.display = "flex";
@@ -228,22 +229,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById("imdbEditDialog").style.display = "flex";
                 document.getElementById("imdbEditDialogLabel").style.display = "flex";
     
-                if (media.book) {
+                if (media.mediatype === "bok") {
                     // Hide IMDb fields for books
                     document.getElementById("imdbEditDialog").style.display = "none";
                     document.getElementById("imdbEditDialogLabel").style.display = "none";
                     mediaEditForm.isbnEditDialog.value = media.ISBN;
-                    mediaEditForm.mediaTypeEditDialog.value = "book";
                 } 
-                else if (media.audioBook) {
-                    mediaEditForm.mediaTypeEditDialog.value = "audiobook";
+                else if (media.mediatype === "ljudbok") {
                     mediaEditForm.isbnEditDialog.value = media.ISBN;
+                    document.getElementById("imdbEditDialog").style.display = "none";
+                    document.getElementById("imdbEditDialogLabel").style.display = "none";
                 } 
-                else if (media.film) {
+                else if (media.mediatype === "film") {
                     // Hide ISBN fields for films
                     document.getElementById("isbnEditDialog").style.display = "none";
                     document.getElementById("isbnEditDialogLabel").style.display = "none";
-                    mediaEditForm.mediaTypeEditDialog.value = "film";
                     mediaEditForm.imdbEditDialog.value = media.IMDB;
                 }
     
@@ -255,8 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert("Could not load media for editing.");
             });
     }
-   //#endregion
-    
+
     
     // When dialog closes, save changes if submitted
     mediaEditDialog.addEventListener("close", (e) => {
@@ -274,6 +273,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const price = mediaEditForm.priceEditDialog.value;
         const mediaType = mediaEditForm.mediaTypeEditDialog.value;
         const IMDB = mediaEditForm.imdbEditDialog.value;
+
+        console.log({ signum, title, author, ISBN, price, mediaType, IMDB });
     
         let film = false, audioBook = false, book = false;
         if (mediaType === "book") book = true;
@@ -307,6 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert("An error occurred while editing media.");
         });
     });
+    //#endregion
     
 
     //#region return a media
