@@ -58,7 +58,7 @@ $apiHandler = new ApiHandler();
 $params = [
     'title' => $_GET['title'] ?? "",
     'ISBN' => $_GET['ISBN'] ?? "",
-    'filter' => $_GET['filter'] ?? "",       // mediatype
+    'filter' => $_GET['filter'] ?? "", 
     'searchFor' => $_GET['searchFor'] ?? "",
     'searchTerm' => $_GET['searchTerm'] ?? "",
     'SABCategory' => $_GET['SABCategory'] ?? "",
@@ -76,5 +76,4 @@ if (!isset($_GET['availableOnly'])) {
     $available = null;
 }
 
-// Anropa alltid getMedia(), låt den hantera tomma filter
 echo $apiHandler->getMedia($params, $available);

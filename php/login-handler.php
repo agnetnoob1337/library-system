@@ -27,6 +27,8 @@ if($username != "admin"){
             $_SESSION['logged_in'] = true;
             $_SESSION['user_id'] = $row['id'];
             $_SESSION['is_admin'] = $row['is_admin'];
+            $_SESSION['user_mail'] = $row['mail'];
+            $_SESSION['username'] = $username;
 
             if($row['is_admin'] == 1){
                 header('Location: ../admin-dashboard.php');

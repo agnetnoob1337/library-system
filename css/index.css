@@ -48,3 +48,10 @@ body {
   .login-box button:hover {
     background: #0056b3;
   }
+
+  .passwordNew{
+    width: 80%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+  }

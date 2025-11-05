@@ -19,6 +19,10 @@ if (!isset($_SESSION['user_id'])) {
 </head>
 <body>
     <a href="php/logout.php">Logga ut</a>
+    <form action="php/password-change.php" method="post" target="_blank">
+        <input type="hidden" name="userId" value="<?php echo $_SESSION['user_id'] ?>">
+        <button type="submit">Ändra lösenord</button>
+    </form>
     <menu>
         <button id="checkout">Låna</button>
         <button id="return">Lämna tillbaka</button>
