@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Värd: 127.0.0.1
--- Tid vid skapande: 03 nov 2025 kl 13:39
+-- Tid vid skapande: 05 nov 2025 kl 14:04
 -- Serverversion: 10.4.32-MariaDB
 -- PHP-version: 8.2.12
 
@@ -35,13 +35,6 @@ CREATE TABLE `checked_out` (
   `checkout_date` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumpning av Data i tabell `checked_out`
---
-
-INSERT INTO `checked_out` (`id`, `return_date`, `c_id`, `user_id`, `checkout_date`) VALUES
-(8, '2025-11-24', 27, 9, '2025-11-03');
-
 -- --------------------------------------------------------
 
 --
@@ -52,6 +45,32 @@ CREATE TABLE `copy` (
   `id` int(11) NOT NULL,
   `media_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumpning av Data i tabell `copy`
+--
+
+INSERT INTO `copy` (`id`, `media_id`) VALUES
+(1, 31),
+(2, 32),
+(3, 25),
+(4, 25),
+(5, 28),
+(6, 28),
+(7, 28),
+(8, 29),
+(9, 29),
+(10, 29),
+(11, 33),
+(12, 33),
+(13, 33),
+(14, 33),
+(15, 34),
+(16, 35),
+(17, 34),
+(18, 34),
+(19, 35),
+(20, 35);
 
 -- --------------------------------------------------------
 
@@ -97,9 +116,11 @@ CREATE TABLE `media` (
 --
 
 INSERT INTO `media` (`id`, `title`, `author`, `SAB_signum`, `price`, `ISBN`, `IMDB`, `mediatype`, `description`) VALUES
-(25, 'The return to Silent Hill', 'Christophe Gans', 'I', 250, '', '22868010', 'film', ''),
 (27, 'Rygga inte undan', 'Stephen King', 'H', 250, '9789100810801', '', 'ljudbok', ''),
-(28, 'Berserk Deluxe Volume 2', 'Kentaro Miura', 'H', 500, '9789100810801', '', 'bok', '');
+(29, '2', '2', 'A', 2, '1111111111111', '', 'bok', ''),
+(32, '3', '3', 'A', 3, '1111111111113', '', 'bok', ''),
+(34, 'Berserker deluxe edition 2', 'Kitsuna Miura', 'A', 200, '9728409010231', '', 'film', ''),
+(35, 'The return to silent hill', 'Stephen King', 'A', 250, '9728409010232', '', 'bok', '');
 
 -- --------------------------------------------------------
 
@@ -152,17 +173,20 @@ CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `username` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `is_admin` int(11) NOT NULL
+  `is_admin` int(11) NOT NULL,
+  `mail` varchar(254) NOT NULL,
+  `reset_token` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumpning av Data i tabell `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `password`, `is_admin`) VALUES
-(0, 'admin', 'admin', 1),
-(9, 'emil', '$2y$10$hJ6ULPQzyOVzyFLIMy5a4.sbZCi74cjdZFR48Uk.lifefDrX2117W', 0),
-(10, 'test3453', '$2y$10$u3XvJXS3b9Pxjdi0aX2WFulKCMDuoBlRC7jm8c/JsJeiey1e.jU6W', 0);
+INSERT INTO `users` (`id`, `username`, `password`, `is_admin`, `mail`, `reset_token`) VALUES
+(0, 'admin', 'admin', 1, '', 0),
+(9, 'emil', '$2y$10$DddThNo013Z4msy1973eiu00.WkCa4essFU7KNldGuXS6NEmAzE0q', 0, 'arvid.johansson@elev.ga.ntig.se', 0),
+(10, 'test3453', '$2y$10$u3XvJXS3b9Pxjdi0aX2WFulKCMDuoBlRC7jm8c/JsJeiey1e.jU6W', 0, '', 0),
+(11, 'elias', '$2y$10$P/UmGRVBLJmxGgowNDwVge89kAKwl2N43rxEiqFzqKvFnHeqWGm.q', 0, 'elias.moll38@gmail.com', 50);
 
 --
 -- Index för dumpade tabeller
@@ -213,13 +237,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT för tabell `checked_out`
 --
 ALTER TABLE `checked_out`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT för tabell `copy`
 --
 ALTER TABLE `copy`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT för tabell `late_returns`
@@ -231,13 +255,13 @@ ALTER TABLE `late_returns`
 -- AUTO_INCREMENT för tabell `media`
 --
 ALTER TABLE `media`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT för tabell `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
