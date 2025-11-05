@@ -105,8 +105,6 @@ if (!isset($_SESSION['user_id'])) {
     
             <div>
                 <h3>Inte utlånade</h3>
-                    <button id="remove-copy">Ta bort kopia</button>
-                    <button id="edit-copy">Redigera media kopia</button>
                 <table>
                     <h3>Böcker</h3>
                     <thead>
@@ -206,7 +204,7 @@ if (!isset($_SESSION['user_id'])) {
                     
                 <menu>
                     <button value="submit">Submit</button>
-                    <button value="cancel">Cancel</button>
+                    <button value="cancel" formnovalidate >Cancel</button>
                 </menu>
             </form>
         </dialog>
@@ -235,9 +233,7 @@ if (!isset($_SESSION['user_id'])) {
         </dialog>
             <div>
                 <h3>Användar konton</h3>
-                <button id="delete-user">Ta bort användare</button>
                 <button id="add-user">Lägg till användare</button>
-                <button id="edit-user">Redigera användare</button>
                 <table>
                     <thead>
                         <tr>
