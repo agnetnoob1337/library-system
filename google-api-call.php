@@ -19,7 +19,7 @@ $audioFile = $_FILES['audio']['tmp_name'];
 $audioData = base64_encode(file_get_contents($audioFile));
 
 // Google API-nyckel
-$apiKey = 'AIzaSyCD6yi14XWauUdNsU1MRICOaWM1Ra5C0nM';
+$apiKey = $inifile['API_KEY'];
 $url = "https://speech.googleapis.com/v1/speech:recognize?key=$apiKey";
 
 // Konfigurera för WebM/Opus (matchar MediaRecorder)
