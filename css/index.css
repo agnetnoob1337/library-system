@@ -70,6 +70,6 @@ nav button {
   background: #191a1b;
 }
 
-#registerForm, #showLoginForm{
+#registerForm, #showLoginForm, #mailForm{
   display: none;
 }

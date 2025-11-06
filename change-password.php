@@ -1,3 +1,17 @@
+<?php
+session_start();
+echo $_SESSION['username'];
+echo $_SESSION['user_mail'];
+echo $_SESSION['user_id'];
+
+if(!isset($_GET['token'])){
+    header("Location: index.html");
+}
+else{
+    echo $_GET['token'];
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
