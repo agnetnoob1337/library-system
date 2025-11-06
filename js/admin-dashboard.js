@@ -1,19 +1,27 @@
 document.addEventListener('DOMContentLoaded', function() {
     let canEdit = false;
+
     function startEditTimer() {
         let timeLeft = 10 * 60;
+        const timerDisplay = document.getElementById("edit-time-left");
 
         const timer = setInterval(() => {
+            let minutes = Math.floor(timeLeft / 60);
             let seconds = timeLeft % 60;
 
+            // Lägg till ledande nolla om mindre än 10
+            minutes = minutes < 10 ? "0" + minutes : minutes;
             seconds = seconds < 10 ? "0" + seconds : seconds;
+
+            timerDisplay.textContent = `Redigerings tid kvar: ${minutes}:${seconds}`;
 
             if (timeLeft <= 0) {
                 clearInterval(timer);
                 canEdit = false;
+                console.log("Tiden är slut!");
+                timerDisplay.textContent = "";
             }
-            console.log(timeLeft);
-            console.log(canEdit);
+
             timeLeft--;
         }, 1000);
     }
@@ -206,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    //#region reomove a copy
+    //#region remove a copy
     function removeCopy(e) {
         const mediaId = e.value;
 
@@ -438,51 +446,20 @@ document.addEventListener('DOMContentLoaded', function() {
     //#endregion
 
     //#region admin enter password to edit
-
-    // function enterAdminPassword(userId) {
-    //     const enterAdminPassDialog = document.getElementById("enter-admin-password-dialog");
-    //     const enterAdminPassForm = document.getElementById("enter-admin-password-form");
-
-    //     enterAdminPassDialog.showModal();
-
-    //     enterAdminPassForm.onsubmit = async (e) => {
-    //         console.log("hej");
-    //         e.preventDefault();
-    //         const password = enterAdminPassForm.password.value;
-
-    //         try {
-    //             const response = await fetch('./php/validate-admin.php', {
-    //                 method: 'POST',
-    //                 headers: { 'Content-Type': 'application/json' },
-    //                 body: JSON.stringify({ password })
-    //             });
-
-    //             const result = await response.json();
-
-    //             if(result.success) {
-    //                 canEdit = true;
-    //                 startEditTimer();
-    //                 console.log('Admin verified');
-    //                 enterAdminPassDialog.close();
-    //                 // editUserDialog.dataset.userId = userId;
-    //                 // editUserDialog.showModal();
-    //             } else {
-    //                 alert('Fel lösenord!');
-    //             }
-
-    //         } catch(err) {
-    //             console.error('Error validating admin:', err);
-    //         }
-    //     };
-    // }
     function enterAdminPassword(element) {
         const enterAdminPassDialog = document.getElementById("enter-admin-password-dialog");
         const enterAdminPassForm = document.getElementById("enter-admin-password-form");
-        
+
+        enterAdminPassForm.password.value = "";
+
         enterAdminPassDialog.showModal();
     
-        enterAdminPassForm.onsubmit = async (e) => {
-            e.preventDefault();
+        enterAdminPassDialog.onclose = async () => {
+            if (enterAdminPassDialog.returnValue !== "submit") {
+                console.log("Admin cancelled.");
+                return;
+            }
+
             const password = enterAdminPassForm.password.value;
     
             try {
@@ -494,16 +471,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
                 const result = await response.json();
     
-                if(result.success) {
+                if (result.success) {
                     canEdit = true;
                     startEditTimer();
                     console.log('Admin verified');
-                    enterAdminPassDialog.close();
+    
+                    if (typeof element === "function") {
+                        element();
+                    } else if (element instanceof HTMLElement && element.click) {
+                        element.click();
+                    }
     
                 } else {
                     alert('Fel lösenord!');
                 }
-    
             } catch(err) {
                 console.error('Error validating admin:', err);
             }
@@ -532,7 +513,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
       //#endregion
 
-
+    //#region handle edit user
     editUserDialog.addEventListener("close", (e) => {
         e.preventDefault();
         const username = userEditForm.username.value;
@@ -567,6 +548,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+    //#endregion
 
     document.getElementById("users-table-body").addEventListener("change", (e) => {
         if(e.target && e.target.classList.contains("user-checkbox")) {
@@ -712,584 +694,656 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
 
     if(searchTerm){
-          console.log(mediaType, searchFor, searchTerm);
-          var SABCategories = [];
-          await fetch('./php/get-sab-categories.php').then(response => {
-              return response.json();
-          }).then(data => {
-              SABCategories = data;
-  
-          }).catch(error => {
-              console.error('Error fetching SAB categories:', error);
-          });
-  
-          //#region empty the available bodies to not duplicate media
-          var availableBookTableBody = document.getElementById("available-books-table-body");
-          if (!availableBookTableBody) {
-              console.warn("Table body missing — page may not have media tables");
-          } else {
-              availableBookTableBody.innerHTML = "";
-          }
-  
-          var availableAudiobookTableBody = document.getElementById("available-audiobook-table-body");
-          if (!availableAudiobookTableBody) {
-              console.warn("Table body missing — page may not have media tables");
-          } else {
-              availableAudiobookTableBody.innerHTML = "";
-          }
-  
-          var availableMovieTableBody = document.getElementById("available-film-table-body");
-          if (!availableMovieTableBody) {
-              console.warn("Table body missing — page may not have media tables");
-          } else {
-              availableMovieTableBody.innerHTML = "";
-          }
-          //#endregion
-  
-          //#region get the filter parameters
-          let filterParam = mediaType;
-          if(mediaType === "book") filterParam = "bok";
-          else if(mediaType === "audiobook") filterParam = "ljudbok";
-          else if(mediaType === "movie") filterParam = "film";
-          //#endregion
-          fetch(`./php/get-media.php?availableOnly=true&filter=${filterParam}&searchTerm=${searchTerm}&searchFor=${searchFor}`).then(response => {
-              return response.json();
-              // console.log("Response status:", response.status);
-              // return response.text(); // byt till text för att se RÅ output
-          }).then(data => {
-      
-              if(mediaType == "book"){
-                  var mediaTableBody = document.getElementById("available-books-table-body");
-      
-                  data.forEach(media => {
-                      var row = document.createElement("tr");
-          
-                      var selectionCell = document.createElement("td");
-                      var checkbox = document.createElement("input");
-                      checkbox.type = "checkbox";
-                      checkbox.classList.add("available-media-checkbox");
-                      checkbox.value = media.id;
-                      selectionCell.appendChild(checkbox);
-                      row.appendChild(selectionCell);
-          
-          
-                      var titleCell = document.createElement("td");
-                      titleCell.textContent = media.title;
-                      row.appendChild(titleCell);
-          
-                      var authorCell = document.createElement("td");
-                      authorCell.textContent = media.author;
-                      row.appendChild(authorCell);
-          
-                      var priceCell = document.createElement("td");
-                      priceCell.textContent = media.price;
-                      row.appendChild(priceCell);
-          
-                      var isbnCell = document.createElement("td");
-                      isbnCell.textContent = media.ISBN;
-                      row.appendChild(isbnCell);
-          
-                      var categoryCell = document.createElement("td");
-                      categoryCell.textContent = media.SAB_signum;
-                      row.appendChild(categoryCell);
-          
-                      var mediaIDCell = document.createElement("td");
-                      mediaIDCell.textContent = media.id;
-                      row.appendChild(mediaIDCell);
-          
-                      fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
-                      .then(response => response.json())
-                      .then(data => {
-                          var cellCopiesAvailable = document.createElement("td");
-                          cellCopiesAvailable.textContent = "";
-                          data.copies.forEach(copy => {
-                              cellCopiesAvailable.textContent += "("+copy.id+"), ";
-                          });
-                          row.appendChild(cellCopiesAvailable);
-                      })
-                      .catch(error => console.error("Error:", error));
-          
-                      mediaTableBody.appendChild(row);
-                  });
-              }
-              else if(mediaType == "audiobook"){
-                  var mediaTableBody = document.getElementById("available-audiobook-table-body");
-  
-                  data.forEach(media => {
-                      var row = document.createElement("tr");
-  
-                      var selectionCell = document.createElement("td");
-                      var checkbox = document.createElement("input");
-                      checkbox.type = "checkbox";
-                      checkbox.classList.add("available-media-checkbox");
-                      checkbox.value = media.id;
-                      selectionCell.appendChild(checkbox);
-                      row.appendChild(selectionCell);
-          
-          
-                      var titleCell = document.createElement("td");
-                      titleCell.textContent = media.title;
-                      row.appendChild(titleCell);
-          
-                      var authorCell = document.createElement("td");
-                      authorCell.textContent = media.author;
-                      row.appendChild(authorCell);
-          
-                      var priceCell = document.createElement("td");
-                      priceCell.textContent = media.price;
-                      row.appendChild(priceCell);
-          
-                      var isbnCell = document.createElement("td");
-                      isbnCell.textContent = media.ISBN;
-                      row.appendChild(isbnCell);
-          
-                      var categoryCell = document.createElement("td");
-                      categoryCell.textContent = media.SAB_signum;
-                      row.appendChild(categoryCell);
-          
-                      var mediaIDCell = document.createElement("td");
-                      mediaIDCell.textContent = media.id;
-                      row.appendChild(mediaIDCell);
-          
-                      fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
-                      .then(response => response.json())
-                      .then(data => {
-                          var cellCopiesAvailable = document.createElement("td");
-                          cellCopiesAvailable.textContent = "";
-                          data.copies.forEach(copy => {
-                              cellCopiesAvailable.textContent += "("+copy.id+"), ";
-                          });
-                          row.appendChild(cellCopiesAvailable);
-                      })
-                      .catch(error => console.error("Error:", error));
-          
-                      mediaTableBody.appendChild(row);
-                  });
-              }
-              else if(mediaType == "movie"){
-                  var mediaTableBody = document.getElementById("available-film-table-body");
-  
-                  data.forEach(media => {
-                      var row = document.createElement("tr");
-          
-                      var selectionCell = document.createElement("td");
-                      var checkbox = document.createElement("input");
-                      checkbox.type = "checkbox";
-                      checkbox.classList.add("available-media-checkbox");
-                      checkbox.value = media.id;
-                      selectionCell.appendChild(checkbox);
-                      row.appendChild(selectionCell);
-          
-          
-                      var titleCell = document.createElement("td");
-                      titleCell.textContent = media.title;
-                      row.appendChild(titleCell);
-          
-                      var authorCell = document.createElement("td");
-                      authorCell.textContent = media.author;
-                      row.appendChild(authorCell);
-          
-                      var priceCell = document.createElement("td");
-                      priceCell.textContent = media.price;
-                      row.appendChild(priceCell);
-          
-                      var isbnCell = document.createElement("td");
-                      isbnCell.textContent = media.IMDB;
-                      row.appendChild(isbnCell);
-          
-                      var categoryCell = document.createElement("td");
-                      categoryCell.textContent = media.SAB_signum;
-                      row.appendChild(categoryCell);
-          
-                      var mediaIDCell = document.createElement("td");
-                      mediaIDCell.textContent = media.id;
-                      row.appendChild(mediaIDCell);
-          
-                      fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
-                      .then(response => response.json())
-                      .then(data => {
-                          var cellCopiesAvailable = document.createElement("td");
-                          cellCopiesAvailable.textContent = "";
-                          data.copies.forEach(copy => {
-                              cellCopiesAvailable.textContent += "("+copy.id+"), ";
-                          });
-                          row.appendChild(cellCopiesAvailable);
-                      })
-                      .catch(error => console.error("Error:", error));
-          
-                      mediaTableBody.appendChild(row);
-                  });
-              }
-          });
-          //#endregion
-          //return;
-      }
-      const lentMediaTable = document.getElementById("unavailable-media-table-body");
-      const availableBooksTableBody = document.getElementById("available-books-table-body");
-      const availableAudioBooksTableBody = document.getElementById("available-audiobook-table-body");
-      const availableFilmsTableBody = document.getElementById("available-film-table-body");
-  
-      while (lentMediaTable.rows.length > 1) {
-          lentMediaTable.deleteRow(1);
-      }
-  
-      while (availableBooksTableBody.rows.length > 0) {
-          availableBooksTableBody.deleteRow(0);
-      }
-      while (availableAudioBooksTableBody.rows.length > 0) {
-          availableAudioBooksTableBody.deleteRow(0);
-      }
-      while (availableFilmsTableBody.rows.length > 0) {
-          availableFilmsTableBody.deleteRow(0);
-      }
-  
-      //#region get available books
-      if(mediaType != "book" || searchTerm.length == 0){
-          fetch("./php/get-media.php?availableOnly=true&filter=bok",).then(response => {
-              return response.json();
-              // console.log("Response status:", response.status);
-              // return response.text(); // byt till text för att se RÅ output
-          }).then(data => {
-              //console.log(data);
-  
-  
-              var mediaTableBody = document.getElementById("available-books-table-body");
-  
-  
-          data.forEach(media => {
-            var row = document.createElement("tr");
-            var selectionCell = document.createElement("td");
-  
-            var deleteCopyButton = document.createElement("button");
-            deleteCopyButton.textContent = "Ta bort";
-            deleteCopyButton.value = media.id;
-            // deleteCopyButton.addEventListener("click", function(e) { 
-            //     removeCopy(e.target);
-            // });
-            deleteCopyButton.addEventListener("click", function(e) {
-                if (canEdit) {
-                    removeCopy(e.target);
-                } else {
-                    enterAdminPassword(e.target);
-                }
+        console.log(mediaType, searchFor, searchTerm);
+        var SABCategories = [];
+        await fetch('./php/get-sab-categories.php').then(response => {
+            return response.json();
+        }).then(data => {
+            SABCategories = data;
+
+        }).catch(error => {
+            console.error('Error fetching SAB categories:', error);
+        });
+
+        //#region empty the available bodies to not duplicate media
+        var availableBookTableBody = document.getElementById("available-books-table-body");
+        if (!availableBookTableBody) {
+            console.warn("Table body missing — page may not have media tables");
+        } else {
+            availableBookTableBody.innerHTML = "";
+        }
+
+        var availableAudiobookTableBody = document.getElementById("available-audiobook-table-body");
+        if (!availableAudiobookTableBody) {
+            console.warn("Table body missing — page may not have media tables");
+        } else {
+            availableAudiobookTableBody.innerHTML = "";
+        }
+
+        var availableMovieTableBody = document.getElementById("available-film-table-body");
+        if (!availableMovieTableBody) {
+            console.warn("Table body missing — page may not have media tables");
+        } else {
+            availableMovieTableBody.innerHTML = "";
+        }
+        //#endregion
+
+        //#region get the filter parameters
+        let filterParam = mediaType;
+        if(mediaType === "book") filterParam = "bok";
+        else if(mediaType === "audiobook") filterParam = "ljudbok";
+        else if(mediaType === "movie") filterParam = "film";
+        //#endregion
+        fetch(`./php/get-media.php?availableOnly=true&filter=${filterParam}&searchTerm=${searchTerm}&searchFor=${searchFor}`).then(response => {
+            return response.json();
+            // console.log("Response status:", response.status);
+            // return response.text(); // byt till text för att se RÅ output
+        }).then(data => {
+    
+            if(mediaType == "book"){
+                var mediaTableBody = document.getElementById("available-books-table-body");
+    
+                data.forEach(media => {
+                var row = document.createElement("tr");
+                var selectionCell = document.createElement("td");
+        
+                var deleteCopyButton = document.createElement("button");
+                deleteCopyButton.textContent = "Ta bort";
+                deleteCopyButton.value = media.id;
+                // deleteCopyButton.addEventListener("click", function(e) { 
+                //     removeCopy(e.target);
+                // });
+                deleteCopyButton.addEventListener("click", function(e) {
+                    if (canEdit) {
+                        removeCopy(e.target);
+                    } else {
+                        enterAdminPassword(e.target);
+                    }
+                });
+                    selectionCell.appendChild(deleteCopyButton);
+        
+                    var editCopyButton = document.createElement("button");
+                    editCopyButton.textContent = "Redigera";
+                    editCopyButton.value = media.id;
+                    editCopyButton.addEventListener("click", function(e) { 
+                        if (canEdit) {
+                        editCopy(e.target);
+                    } else {
+                        enterAdminPassword(e.target);
+                    }
+                    });
+                    selectionCell.appendChild(editCopyButton);
+        
+                    row.appendChild(selectionCell);
+        
+                    var titleCell = document.createElement("td");
+                    titleCell.textContent = media.title;
+                    row.appendChild(titleCell);
+    
+                    var authorCell = document.createElement("td");
+                    authorCell.textContent = media.author;
+                    row.appendChild(authorCell);
+    
+                    var priceCell = document.createElement("td");
+                    priceCell.textContent = media.price;
+                    row.appendChild(priceCell);
+    
+                    var isbnCell = document.createElement("td");
+                    isbnCell.textContent = media.ISBN;
+                    row.appendChild(isbnCell);
+    
+                    var categoryCell = document.createElement("td");
+                    categoryCell.textContent = media.SAB_signum;
+                    row.appendChild(categoryCell);
+    
+                    var mediaIDCell = document.createElement("td");
+                    mediaIDCell.textContent = media.id;
+                    row.appendChild(mediaIDCell);
+    
+                    fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
+                    .then(response => response.json())
+                    .then(data => {
+                        var cellCopiesAvailable = document.createElement("td");
+                        cellCopiesAvailable.textContent = "";
+                        data.copies.forEach(copy => {
+                            cellCopiesAvailable.textContent += "("+copy.id+"), ";
+                        });
+                        row.appendChild(cellCopiesAvailable);
+                    })
+                    .catch(error => console.error("Error:", error));
+    
+                    mediaTableBody.appendChild(row);
+                });
+                
+            }
+            else if(mediaType == "audiobook"){
+                var mediaTableBody = document.getElementById("available-audiobook-table-body");
+
+                data.forEach(media => {
+                    var row = document.createElement("tr");
+                    var selectionCell = document.createElement("td");
+        
+                    var deleteCopyButton = document.createElement("button");
+                    deleteCopyButton.textContent = "Ta bort";
+                    deleteCopyButton.value = media.id;
+                    //   deleteCopyButton.addEventListener("click", function(e) { 
+                    //       removeCopy(e.target);
+                    //   });
+                    deleteCopyButton.addEventListener("click", function(e) {
+                        if (canEdit) {
+                            removeCopy(e.target);
+                        } else {
+                            enterAdminPassword(e.target);
+                        }
+                    });
+                    selectionCell.appendChild(deleteCopyButton);
+        
+                    var editCopyButton = document.createElement("button");
+                    editCopyButton.textContent = "Redigera";
+                    editCopyButton.value = media.id;
+                    //   editCopyButton.addEventListener("click", function(e) { 
+                    //       editCopy(e.target);
+                    //   });
+                    editCopyButton.addEventListener("click", function(e) { 
+                        if (canEdit) {
+                        editCopy(e.target);
+                    } else {
+                        enterAdminPassword(e.target);
+                    }
+                    });
+                    selectionCell.appendChild(editCopyButton);
+        
+                    row.appendChild(selectionCell);
+        
+        
+                    var titleCell = document.createElement("td");
+                    titleCell.textContent = media.title;
+                    row.appendChild(titleCell);
+    
+                    var authorCell = document.createElement("td");
+                    authorCell.textContent = media.author;
+                    row.appendChild(authorCell);
+    
+                    var priceCell = document.createElement("td");
+                    priceCell.textContent = media.price;
+                    row.appendChild(priceCell);
+    
+                    var isbnCell = document.createElement("td");
+                    isbnCell.textContent = media.ISBN;
+                    row.appendChild(isbnCell);
+    
+                    var categoryCell = document.createElement("td");
+                    categoryCell.textContent = media.SAB_signum;
+                    row.appendChild(categoryCell);
+    
+                    var mediaIDCell = document.createElement("td");
+                    mediaIDCell.textContent = media.id;
+                    row.appendChild(mediaIDCell);
+    
+                    fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
+                    .then(response => response.json())
+                    .then(data => {
+                        var cellCopiesAvailable = document.createElement("td");
+                        cellCopiesAvailable.textContent = "";
+                        data.copies.forEach(copy => {
+                            cellCopiesAvailable.textContent += "("+copy.id+"), ";
+                        });
+                        row.appendChild(cellCopiesAvailable);
+                    })
+                    .catch(error => console.error("Error:", error));
+    
+                    mediaTableBody.appendChild(row);
+                });
+            }
+            else if(mediaType == "movie"){
+                var mediaTableBody = document.getElementById("available-film-table-body");
+
+                data.forEach(media => {
+                    var row = document.createElement("tr");
+                    var selectionCell = document.createElement("td");
+        
+                    var deleteCopyButton = document.createElement("button");
+                    deleteCopyButton.textContent = "Ta bort";
+                    deleteCopyButton.value = media.id;
+                    //   deleteCopyButton.addEventListener("click", function(e) { 
+                    //       removeCopy(e.target);
+                    //   });
+                    deleteCopyButton.addEventListener("click", function(e) {
+                        if (canEdit) {
+                            removeCopy(e.target);
+                        } else {
+                            enterAdminPassword(e.target);
+                        }
+                    });
+                    selectionCell.appendChild(deleteCopyButton);
+        
+                    var editCopyButton = document.createElement("button");
+                    editCopyButton.textContent = "Redigera";
+                    editCopyButton.value = media.id;
+                    //   editCopyButton.addEventListener("click", function(e) { 
+                    //       editCopy(e.target);
+                    //   });
+                    editCopyButton.addEventListener("click", function(e) { 
+                        if (canEdit) {
+                        editCopy(e.target);
+                    } else {
+                        enterAdminPassword(e.target);
+                    }
+                    });
+                    selectionCell.appendChild(editCopyButton);
+        
+                    row.appendChild(selectionCell);
+        
+        
+                    var titleCell = document.createElement("td");
+                    titleCell.textContent = media.title;
+                    row.appendChild(titleCell);
+
+                    var authorCell = document.createElement("td");
+                    authorCell.textContent = media.author;
+                    row.appendChild(authorCell);
+
+                    var priceCell = document.createElement("td");
+                    priceCell.textContent = media.price;
+                    row.appendChild(priceCell);
+
+                    var isbnCell = document.createElement("td");
+                    isbnCell.textContent = media.IMDB;
+                    row.appendChild(isbnCell);
+
+                    var categoryCell = document.createElement("td");
+                    categoryCell.textContent = media.SAB_signum;
+                    row.appendChild(categoryCell);
+
+                    var mediaIDCell = document.createElement("td");
+                    mediaIDCell.textContent = media.id;
+                    row.appendChild(mediaIDCell);
+
+                    fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
+                    .then(response => response.json())
+                    .then(data => {
+                        var cellCopiesAvailable = document.createElement("td");
+                        cellCopiesAvailable.textContent = "";
+                        data.copies.forEach(copy => {
+                            cellCopiesAvailable.textContent += "("+copy.id+"), ";
+                        });
+                        row.appendChild(cellCopiesAvailable);
+                    })
+                    .catch(error => console.error("Error:", error));
+
+                    mediaTableBody.appendChild(row);
+                });
+            }
+        });
+        //#endregion
+        //return;
+        }
+        const lentMediaTable = document.getElementById("unavailable-media-table-body");
+        const availableBooksTableBody = document.getElementById("available-books-table-body");
+        const availableAudioBooksTableBody = document.getElementById("available-audiobook-table-body");
+        const availableFilmsTableBody = document.getElementById("available-film-table-body");
+    
+        while (lentMediaTable.rows.length > 1) {
+            lentMediaTable.deleteRow(1);
+        }
+    
+        while (availableBooksTableBody.rows.length > 0) {
+            availableBooksTableBody.deleteRow(0);
+        }
+        while (availableAudioBooksTableBody.rows.length > 0) {
+            availableAudioBooksTableBody.deleteRow(0);
+        }
+        while (availableFilmsTableBody.rows.length > 0) {
+            availableFilmsTableBody.deleteRow(0);
+        }
+    
+        //#region get available books
+        if(mediaType != "book" || searchTerm.length == 0){
+            fetch("./php/get-media.php?availableOnly=true&filter=bok",).then(response => {
+                return response.json();
+                // console.log("Response status:", response.status);
+                // return response.text(); // byt till text för att se RÅ output
+            }).then(data => {
+                //console.log(data);
+    
+    
+                var mediaTableBody = document.getElementById("available-books-table-body");
+    
+    
+            data.forEach(media => {
+                var row = document.createElement("tr");
+                var selectionCell = document.createElement("td");
+    
+                var deleteCopyButton = document.createElement("button");
+                deleteCopyButton.textContent = "Ta bort";
+                deleteCopyButton.value = media.id;
+                // deleteCopyButton.addEventListener("click", function(e) { 
+                //     removeCopy(e.target);
+                // });
+                deleteCopyButton.addEventListener("click", function(e) {
+                    if (canEdit) {
+                        removeCopy(e.target);
+                    } else {
+                        enterAdminPassword(e.target);
+                    }
+                });
+                selectionCell.appendChild(deleteCopyButton);
+    
+                var editCopyButton = document.createElement("button");
+                editCopyButton.textContent = "Redigera";
+                editCopyButton.value = media.id;
+                editCopyButton.addEventListener("click", function(e) { 
+                    if (canEdit) {
+                        editCopy(e.target);
+                    } else {
+                        enterAdminPassword(e.target);
+                    }
+                });
+                selectionCell.appendChild(editCopyButton);
+    
+                row.appendChild(selectionCell);
+    
+                    var titleCell = document.createElement("td");
+                    titleCell.textContent = media.title;
+                    row.appendChild(titleCell);
+    
+                    var authorCell = document.createElement("td");
+                    authorCell.textContent = media.author;
+                    row.appendChild(authorCell);
+    
+                    var priceCell = document.createElement("td");
+                    priceCell.textContent = media.price;
+                    row.appendChild(priceCell);
+    
+                    var isbnCell = document.createElement("td");
+                    isbnCell.textContent = media.ISBN;
+                    row.appendChild(isbnCell);
+    
+                    var categoryCell = document.createElement("td");
+                    categoryCell.textContent = media.SAB_signum;
+                    row.appendChild(categoryCell);
+    
+                    var mediaIDCell = document.createElement("td");
+                    mediaIDCell.textContent = media.id;
+                    row.appendChild(mediaIDCell);
+    
+                    fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
+                    .then(response => response.json())
+                    .then(data => {
+                        var cellCopiesAvailable = document.createElement("td");
+                        cellCopiesAvailable.textContent = "";
+                        data.copies.forEach(copy => {
+                            cellCopiesAvailable.textContent += "("+copy.id+"), ";
+                        });
+                        row.appendChild(cellCopiesAvailable);
+                    })
+                    .catch(error => console.error("Error:", error));
+    
+    
+    
+                    mediaTableBody.appendChild(row);
+                });
             });
-              selectionCell.appendChild(deleteCopyButton);
-  
-              var editCopyButton = document.createElement("button");
-              editCopyButton.textContent = "Redigera";
-              editCopyButton.value = media.id;
-              editCopyButton.addEventListener("click", function(e) { 
-                  if (canEdit) {
-                    editCopy(e.target);
-                } else {
-                    enterAdminPassword(e.target);
-                }
-              });
-              selectionCell.appendChild(editCopyButton);
-  
-              row.appendChild(selectionCell);
-  
-                  var titleCell = document.createElement("td");
-                  titleCell.textContent = media.title;
-                  row.appendChild(titleCell);
-  
-                  var authorCell = document.createElement("td");
-                  authorCell.textContent = media.author;
-                  row.appendChild(authorCell);
-  
-                  var priceCell = document.createElement("td");
-                  priceCell.textContent = media.price;
-                  row.appendChild(priceCell);
-  
-                  var isbnCell = document.createElement("td");
-                  isbnCell.textContent = media.ISBN;
-                  row.appendChild(isbnCell);
-  
-                  var categoryCell = document.createElement("td");
-                  categoryCell.textContent = media.SAB_signum;
-                  row.appendChild(categoryCell);
-  
-                  var mediaIDCell = document.createElement("td");
-                  mediaIDCell.textContent = media.id;
-                  row.appendChild(mediaIDCell);
-  
-                  fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
-                  .then(response => response.json())
-                  .then(data => {
-                      var cellCopiesAvailable = document.createElement("td");
-                      cellCopiesAvailable.textContent = "";
-                      data.copies.forEach(copy => {
-                          cellCopiesAvailable.textContent += "("+copy.id+"), ";
-                      });
-                      row.appendChild(cellCopiesAvailable);
-                  })
-                  .catch(error => console.error("Error:", error));
-  
-  
-  
-                  mediaTableBody.appendChild(row);
-              });
-          });
-      }
-      //#endregion
-  
-      //#region get available audiobooks
-      if(mediaType != "audiobook" || searchTerm.length == 0){
-          fetch("./php/get-media.php?availableOnly=true&filter=ljudbok",).then(response => {
-              return response.json();
-          }).then(data => {
-              console.log(data); 
-  
-              var mediaTableBody = document.getElementById("available-audiobook-table-body");
-  
-          data.forEach(media => {
-              var row = document.createElement("tr");
-              var selectionCell = document.createElement("td");
-  
-              var deleteCopyButton = document.createElement("button");
-              deleteCopyButton.textContent = "Ta bort";
-              deleteCopyButton.value = media.id;
-            //   deleteCopyButton.addEventListener("click", function(e) { 
-            //       removeCopy(e.target);
-            //   });
-            deleteCopyButton.addEventListener("click", function(e) {
-                if (canEdit) {
-                    removeCopy(e.target);
-                } else {
-                    enterAdminPassword(e.target);
-                }
+        }
+        //#endregion
+    
+        //#region get available audiobooks
+        if(mediaType != "audiobook" || searchTerm.length == 0){
+            fetch("./php/get-media.php?availableOnly=true&filter=ljudbok",).then(response => {
+                return response.json();
+            }).then(data => {
+                console.log(data); 
+    
+                var mediaTableBody = document.getElementById("available-audiobook-table-body");
+    
+                data.forEach(media => {
+                    var row = document.createElement("tr");
+                    var selectionCell = document.createElement("td");
+        
+                    var deleteCopyButton = document.createElement("button");
+                    deleteCopyButton.textContent = "Ta bort";
+                    deleteCopyButton.value = media.id;
+                    //   deleteCopyButton.addEventListener("click", function(e) { 
+                    //       removeCopy(e.target);
+                    //   });
+                    deleteCopyButton.addEventListener("click", function(e) {
+                        if (canEdit) {
+                            removeCopy(e.target);
+                        } else {
+                            enterAdminPassword(e.target);
+                        }
+                    });
+                    selectionCell.appendChild(deleteCopyButton);
+        
+                    var editCopyButton = document.createElement("button");
+                    editCopyButton.textContent = "Redigera";
+                    editCopyButton.value = media.id;
+                    //   editCopyButton.addEventListener("click", function(e) { 
+                    //       editCopy(e.target);
+                    //   });
+                    editCopyButton.addEventListener("click", function(e) { 
+                        if (canEdit) {
+                        editCopy(e.target);
+                    } else {
+                        enterAdminPassword(e.target);
+                    }
+                    });
+                    selectionCell.appendChild(editCopyButton);
+        
+                    row.appendChild(selectionCell);
+        
+        
+                    var titleCell = document.createElement("td");
+                    titleCell.textContent = media.title;
+                    row.appendChild(titleCell);
+    
+                    var authorCell = document.createElement("td");
+                    authorCell.textContent = media.author;
+                    row.appendChild(authorCell);
+    
+                    var priceCell = document.createElement("td");
+                    priceCell.textContent = media.price;
+                    row.appendChild(priceCell);
+    
+                    var isbnCell = document.createElement("td");
+                    isbnCell.textContent = media.ISBN;
+                    row.appendChild(isbnCell);
+    
+                    var categoryCell = document.createElement("td");
+                    categoryCell.textContent = media.SAB_signum;
+                    row.appendChild(categoryCell);
+    
+                    var mediaIDCell = document.createElement("td");
+                    mediaIDCell.textContent = media.id;
+                    row.appendChild(mediaIDCell);
+    
+                    fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
+                    .then(response => response.json())
+                    .then(data => {
+                        var cellCopiesAvailable = document.createElement("td");
+                        cellCopiesAvailable.textContent = "";
+                        data.copies.forEach(copy => {
+                            cellCopiesAvailable.textContent += "("+copy.id+"), ";
+                        });
+                        row.appendChild(cellCopiesAvailable);
+                    })
+                    .catch(error => console.error("Error:", error));
+    
+                    mediaTableBody.appendChild(row);
+                });
             });
-              selectionCell.appendChild(deleteCopyButton);
-  
-              var editCopyButton = document.createElement("button");
-              editCopyButton.textContent = "Redigera";
-              editCopyButton.value = media.id;
-            //   editCopyButton.addEventListener("click", function(e) { 
-            //       editCopy(e.target);
-            //   });
-            editCopyButton.addEventListener("click", function(e) { 
-                if (canEdit) {
-                  editCopy(e.target);
-              } else {
-                  enterAdminPassword(e.target);
-              }
+        }
+        //#endregion
+    
+        //#region get available movies
+        if(mediaType != "movie" || searchTerm.length == 0){
+            fetch("./php/get-media.php?availableOnly=true&filter=film",).then(response => {
+                return response.json();
+            }).then(data => {
+                console.log(data); 
+    
+                var mediaTableBody = document.getElementById("available-film-table-body");
+    
+                data.forEach(media => {
+                    var row = document.createElement("tr");
+                    var selectionCell = document.createElement("td");
+        
+                    var deleteCopyButton = document.createElement("button");
+                    deleteCopyButton.textContent = "Ta bort";
+                    deleteCopyButton.value = media.id;
+                    //   deleteCopyButton.addEventListener("click", function(e) { 
+                    //       removeCopy(e.target);
+                    //   });
+                    deleteCopyButton.addEventListener("click", function(e) {
+                        if (canEdit) {
+                            removeCopy(e.target);
+                        } else {
+                            enterAdminPassword(e.target);
+                        }
+                    });
+                    selectionCell.appendChild(deleteCopyButton);
+        
+                    var editCopyButton = document.createElement("button");
+                    editCopyButton.textContent = "Redigera";
+                    editCopyButton.value = media.id;
+                    //   editCopyButton.addEventListener("click", function(e) { 
+                    //       editCopy(e.target);
+                    //   });
+                    editCopyButton.addEventListener("click", function(e) { 
+                        if (canEdit) {
+                        editCopy(e.target);
+                    } else {
+                        enterAdminPassword(e.target);
+                    }
+                    });
+                    selectionCell.appendChild(editCopyButton);
+        
+                    row.appendChild(selectionCell);
+        
+        
+                    var titleCell = document.createElement("td");
+                    titleCell.textContent = media.title;
+                    row.appendChild(titleCell);
+
+                    var authorCell = document.createElement("td");
+                    authorCell.textContent = media.author;
+                    row.appendChild(authorCell);
+
+                    var priceCell = document.createElement("td");
+                    priceCell.textContent = media.price;
+                    row.appendChild(priceCell);
+
+                    var isbnCell = document.createElement("td");
+                    isbnCell.textContent = media.IMDB;
+                    row.appendChild(isbnCell);
+
+                    var categoryCell = document.createElement("td");
+                    categoryCell.textContent = media.SAB_signum;
+                    row.appendChild(categoryCell);
+
+                    var mediaIDCell = document.createElement("td");
+                    mediaIDCell.textContent = media.id;
+                    row.appendChild(mediaIDCell);
+
+                    fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
+                    .then(response => response.json())
+                    .then(data => {
+                        var cellCopiesAvailable = document.createElement("td");
+                        cellCopiesAvailable.textContent = "";
+                        data.copies.forEach(copy => {
+                            cellCopiesAvailable.textContent += "("+copy.id+"), ";
+                        });
+                        row.appendChild(cellCopiesAvailable);
+                    })
+                    .catch(error => console.error("Error:", error));
+
+                    mediaTableBody.appendChild(row);
+                });
             });
-              selectionCell.appendChild(editCopyButton);
-  
-              row.appendChild(selectionCell);
-  
-  
-                  var titleCell = document.createElement("td");
-                  titleCell.textContent = media.title;
-                  row.appendChild(titleCell);
-  
-                  var authorCell = document.createElement("td");
-                  authorCell.textContent = media.author;
-                  row.appendChild(authorCell);
-  
-                  var priceCell = document.createElement("td");
-                  priceCell.textContent = media.price;
-                  row.appendChild(priceCell);
-  
-                  var isbnCell = document.createElement("td");
-                  isbnCell.textContent = media.ISBN;
-                  row.appendChild(isbnCell);
-  
-                  var categoryCell = document.createElement("td");
-                  categoryCell.textContent = media.SAB_signum;
-                  row.appendChild(categoryCell);
-  
-                  var mediaIDCell = document.createElement("td");
-                  mediaIDCell.textContent = media.id;
-                  row.appendChild(mediaIDCell);
-  
-                  fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
-                  .then(response => response.json())
-                  .then(data => {
-                      var cellCopiesAvailable = document.createElement("td");
-                      cellCopiesAvailable.textContent = "";
-                      data.copies.forEach(copy => {
-                          cellCopiesAvailable.textContent += "("+copy.id+"), ";
-                      });
-                      row.appendChild(cellCopiesAvailable);
-                  })
-                  .catch(error => console.error("Error:", error));
-  
-                  mediaTableBody.appendChild(row);
-              });
-          });
-      }
-      //#endregion
-  
-      //#region get available movies
-      if(mediaType != "movie" || searchTerm.length == 0){
-          fetch("./php/get-media.php?availableOnly=true&filter=film",).then(response => {
-              return response.json();
-          }).then(data => {
-              console.log(data); 
-  
-              var mediaTableBody = document.getElementById("available-film-table-body");
-  
-          data.forEach(media => {
-              var row = document.createElement("tr");
-              var selectionCell = document.createElement("td");
-  
-              var deleteCopyButton = document.createElement("button");
-              deleteCopyButton.textContent = "Ta bort";
-              deleteCopyButton.value = media.id;
-            //   deleteCopyButton.addEventListener("click", function(e) { 
-            //       removeCopy(e.target);
-            //   });
-            deleteCopyButton.addEventListener("click", function(e) {
-                if (canEdit) {
-                    removeCopy(e.target);
-                } else {
-                    enterAdminPassword(e.target);
-                }
+        }
+        //#endregion
+    
+        //#region get loaned media
+        fetch("./php/get-media.php?availableOnly=false",).then(response => {
+            return response.json();
+        }).then(data => {
+            console.log(data); 
+    
+            var mediaTableBody = document.getElementById("unavailable-media-table-body");
+            
+            if(data.length === 0) {
+                var row = document.createElement("tr");
+                var noDataCell = document.createElement("td");
+                noDataCell.colSpan = 10;
+                noDataCell.textContent = "Inget är utlånat.";
+                row.appendChild(noDataCell);
+                mediaTableBody.appendChild(row);
+                return;
+    
+            }
+    
+            data.forEach(media => {
+                var row = document.createElement("tr");
+    
+                var selectionCell = document.createElement("td");
+                var checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.value = media.media_id;
+                checkbox.dataset.copyId = media.copy_id;
+                checkbox.dataset.userId = media.user_id;
+                selectionCell.appendChild(checkbox);
+                row.appendChild(selectionCell);
+    
+                var titleCell = document.createElement("td");
+                titleCell.textContent = media.title;
+                row.appendChild(titleCell);
+    
+                var authorCell = document.createElement("td");
+                authorCell.textContent = media.author;
+                row.appendChild(authorCell);
+    
+                var priceCell = document.createElement("td");
+                priceCell.textContent = media.price;
+                row.appendChild(priceCell);
+    
+                var isbnCell = document.createElement("td");
+                isbnCell.textContent = media.ISBN;
+                row.appendChild(isbnCell);
+    
+                var categoryCell = document.createElement("td");
+                categoryCell.textContent = media.SAB_signum;
+                row.appendChild(categoryCell);
+    
+                var mediaTypeCell = document.createElement("td");
+                mediaTypeCell.textContent = media.mediatype;
+                // if(media.book) {
+                //     mediaTypeCell.textContent = "Bok";
+                // } else if(media.audioBook) {
+                //     mediaTypeCell.textContent = "Ljudbok";
+                // } else if(media.film) {
+                //     mediaTypeCell.textContent = "Film";
+                // }
+                row.appendChild(mediaTypeCell);
+    
+                var lentbyCell = document.createElement("td");
+                lentbyCell.textContent = media.username;
+                row.appendChild(lentbyCell);
+    
+                var returnDateCell = document.createElement("td");
+                returnDateCell.textContent = media.return_date;
+                row.appendChild(returnDateCell);
+    
+                var copyIDCell = document.createElement("td");
+                copyIDCell.textContent = media.copy_id;
+                row.appendChild(copyIDCell);
+    
+                mediaTableBody.appendChild(row);
             });
-              selectionCell.appendChild(deleteCopyButton);
-  
-              var editCopyButton = document.createElement("button");
-              editCopyButton.textContent = "Redigera";
-              editCopyButton.value = media.id;
-            //   editCopyButton.addEventListener("click", function(e) { 
-            //       editCopy(e.target);
-            //   });
-            editCopyButton.addEventListener("click", function(e) { 
-                if (canEdit) {
-                  editCopy(e.target);
-              } else {
-                  enterAdminPassword(e.target);
-              }
-            });
-              selectionCell.appendChild(editCopyButton);
-  
-              row.appendChild(selectionCell);
-  
-  
-                  var titleCell = document.createElement("td");
-                  titleCell.textContent = media.title;
-                  row.appendChild(titleCell);
-  
-                  var authorCell = document.createElement("td");
-                  authorCell.textContent = media.author;
-                  row.appendChild(authorCell);
-  
-                  var priceCell = document.createElement("td");
-                  priceCell.textContent = media.price;
-                  row.appendChild(priceCell);
-  
-                  var isbnCell = document.createElement("td");
-                  isbnCell.textContent = media.IMDB;
-                  row.appendChild(isbnCell);
-  
-                  var categoryCell = document.createElement("td");
-                  categoryCell.textContent = media.SAB_signum;
-                  row.appendChild(categoryCell);
-  
-                  var mediaIDCell = document.createElement("td");
-                  mediaIDCell.textContent = media.id;
-                  row.appendChild(mediaIDCell);
-  
-                  fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
-                  .then(response => response.json())
-                  .then(data => {
-                      var cellCopiesAvailable = document.createElement("td");
-                      cellCopiesAvailable.textContent = "";
-                      data.copies.forEach(copy => {
-                          cellCopiesAvailable.textContent += "("+copy.id+"), ";
-                      });
-                      row.appendChild(cellCopiesAvailable);
-                  })
-                  .catch(error => console.error("Error:", error));
-  
-                  mediaTableBody.appendChild(row);
-              });
-          });
-      }
-      //#endregion
-  
-      //#region get loaned media
-      fetch("./php/get-media.php?availableOnly=false",).then(response => {
-          return response.json();
-      }).then(data => {
-          console.log(data); 
-  
-          var mediaTableBody = document.getElementById("unavailable-media-table-body");
-          
-          if(data.length === 0) {
-              var row = document.createElement("tr");
-              var noDataCell = document.createElement("td");
-              noDataCell.colSpan = 10;
-              noDataCell.textContent = "Inget är utlånat.";
-              row.appendChild(noDataCell);
-              mediaTableBody.appendChild(row);
-              return;
-  
-          }
-  
-          data.forEach(media => {
-              var row = document.createElement("tr");
-  
-              var selectionCell = document.createElement("td");
-              var checkbox = document.createElement("input");
-              checkbox.type = "checkbox";
-              checkbox.value = media.media_id;
-              checkbox.dataset.copyId = media.copy_id;
-              checkbox.dataset.userId = media.user_id;
-              selectionCell.appendChild(checkbox);
-              row.appendChild(selectionCell);
-  
-              var titleCell = document.createElement("td");
-              titleCell.textContent = media.title;
-              row.appendChild(titleCell);
-  
-              var authorCell = document.createElement("td");
-              authorCell.textContent = media.author;
-              row.appendChild(authorCell);
-  
-              var priceCell = document.createElement("td");
-              priceCell.textContent = media.price;
-              row.appendChild(priceCell);
-  
-              var isbnCell = document.createElement("td");
-              isbnCell.textContent = media.ISBN;
-              row.appendChild(isbnCell);
-  
-              var categoryCell = document.createElement("td");
-              categoryCell.textContent = media.SAB_signum;
-              row.appendChild(categoryCell);
-  
-              var mediaTypeCell = document.createElement("td");
-              mediaTypeCell.textContent = media.mediatype;
-              // if(media.book) {
-              //     mediaTypeCell.textContent = "Bok";
-              // } else if(media.audioBook) {
-              //     mediaTypeCell.textContent = "Ljudbok";
-              // } else if(media.film) {
-              //     mediaTypeCell.textContent = "Film";
-              // }
-              row.appendChild(mediaTypeCell);
-  
-              var lentbyCell = document.createElement("td");
-              lentbyCell.textContent = media.username;
-              row.appendChild(lentbyCell);
-  
-              var returnDateCell = document.createElement("td");
-              returnDateCell.textContent = media.return_date;
-              row.appendChild(returnDateCell);
-  
-              var copyIDCell = document.createElement("td");
-              copyIDCell.textContent = media.copy_id;
-              row.appendChild(copyIDCell);
-  
-              mediaTableBody.appendChild(row);
-          });
-      });
-      //#endregion
-  
-      
-  }
+        });
+        //#endregion
+    
+        
+    }
   
   
   
