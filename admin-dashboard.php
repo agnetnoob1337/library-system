@@ -18,18 +18,20 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="./css/admin-dashboard.css">
 </head>
 <body data-section="media">
-    <a id="logout-button" href="php/logout.php">Logga ut</a>
-    <menu>
+    <menu id="admin-choose-edit-menu">
         <div class="menu-item active" data-target="media">
             <h3>Media</h3>
         </div>
         <div class="menu-item" data-target="users">
-            <h3>Users</h3>
+            <h3>Användare</h3>
+        </div>
+        <div class="menu-item" data-target="logout">
+            <a id="logout-button" href="php/logout.php">Logga ut</a>
         </div>
     </menu>
-
     <main>
         <section data-section="media">
+            <p id="edit-time-left"></p>
             <dialog id="media-edit-dialog">
                 <form method="dialog" id="media-edit-form">
                     <label for="titleEditDialog">
@@ -73,7 +75,7 @@ if (!isset($_SESSION['user_id'])) {
                         <option value="film">Film</option>
                     </select>
 
-                    <menu>
+                    <menu id="enter-admin-password-menu">
                         <button value="submit">Submit</button>
                         <button value="cancel">Cancel</button>
                     </menu>
@@ -106,31 +108,33 @@ if (!isset($_SESSION['user_id'])) {
             <div>
                 <h3>Inte utlånade</h3>
                 <table>
-                    <h3>Böcker</h3>
-                    <input type="search" id="search-input-book" placeholder="Sök media...">
-                    <div>
-                        <label for="media-type">Sök efter:</label>
-                        <select name="media-type" id="search-for-book">
-                            <option value="">Allt</option>
-                            <option value="title">Titel</option>
-                            <option value="category">Kategori</option>
-                            <option value="author">Författare</option>
-                        </select>
+                    <div class="unborrowed-media-container">
+                        <h3>Böcker</h3>
+                        <input type="search" id="search-input-book" placeholder="Sök media...">
+                        <div id="search-for-container">
+                            <label for="media-type">Sök efter:</label>
+                            <select name="media-type" id="search-for-book">
+                                <option value="">Allt</option>
+                                <option value="title">Titel</option>
+                                <option value="category">Kategori</option>
+                                <option value="author">Författare</option>
+                            </select>
+                        </div>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Titel</th>
+                                <th>Författare</th>
+                                <th>Pris (SEK)</th>
+                                <th>ISBN</th>
+                                <th>SAB Kategori</th>
+                                <th>Media ID</th>
+                                <th>Kopior tillgängliga (ID)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="available-books-table-body">
+                        </tbody>
                     </div>
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Titel</th>
-                            <th>Författare</th>
-                            <th>Pris (SEK)</th>
-                            <th>ISBN</th>
-                            <th>SAB Kategori</th>
-                            <th>Media ID</th>
-                            <th>Kopior tillgängliga (ID)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="available-books-table-body">
-                    </tbody>
                 </table>
 
                 <table>
@@ -237,7 +241,7 @@ if (!isset($_SESSION['user_id'])) {
                 </label>
                 <input type="checkbox" id="is-admin" name="isAdmin"/>
                     
-                <menu>
+                <menu id="enter-admin-password-menu"> 
                     <button value="submit">Submit</button>
                     <button value="cancel" formnovalidate >Cancel</button>
                 </menu>
@@ -260,7 +264,7 @@ if (!isset($_SESSION['user_id'])) {
                 </label>
                 <input type="checkbox" class="is-admin" name="isAdmin"/>
                     
-                <menu>
+                <menu id="enter-admin-password-menu">
                     <button value="submit">Submit</button>
                     <button value="cancel">Cancel</button>
                 </menu>
@@ -291,9 +295,9 @@ if (!isset($_SESSION['user_id'])) {
                 </label>
                 <input type="password" class="password" name="password" />
                     
-                <menu>
-                    <button value="submit">Submit</button>
-                    <button value="cancel">Cancel</button>
+                <menu id="enter-admin-password-menu">
+                    <button id="enter-admin-password-submit" value="submit">Submit</button>
+                    <button id="enter-admin-password-cancel" value="cancel" formnovalidate>Cancel</button>
                 </menu>
             </form>
         </dialog>

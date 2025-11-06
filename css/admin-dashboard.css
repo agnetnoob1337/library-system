@@ -1,4 +1,4 @@
-*{
+/* *{
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
@@ -7,6 +7,7 @@
 
 section {
     display: none; 
+    padding: 2rem;
 }
   
 body[data-section="media"] section[data-section="media"],
@@ -19,6 +20,7 @@ body{
     display: flex;
     width: 100%;
     height: 100%;
+    flex-flow: column;
 }
 
 menu{
@@ -53,13 +55,12 @@ main{
 }
 
 table {
-    border-collapse: collapse; /* merge adjacent borders into one */
-    width: 60%;
-    margin: 20px auto;
+    border-collapse: collapse;
+    justify-self: center;
 }
 
 th, td, tr {
-    border: 2px solid #333; /* add border to cells */
+    border: 2px solid #333;
     padding: 10px;
     text-align: center;
 }
@@ -111,11 +112,16 @@ dialog form menu button {
     padding: 0.5rem;
 }
 
+h3{
+    margin-top: 1rem;
+}
+
 #add-media-con{
     display: flex;
     flex-direction: column;
     margin-bottom: 1rem;
     row-gap: 0.5rem;
+    justify-self: center;
 }
 
 #add-media-con input[type="text"],
@@ -137,4 +143,307 @@ dialog form menu button {
 
 #logout-button {
     max-height: 10px;
+}
+
+.unborrowed-media-container{
+    display: flex;
+    flex-flow: column;
+    width: 80%;
+} */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+
+menu {
+    background-color: #c2c2c2;
+    width: 20%;
+    min-width: 180px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    top: 0;
+    left: 0;
+}
+
+#admin-choose-edit-menu {
+    position: fixed;
+}
+
+menu div {
+    padding: 1rem;
+    border-bottom: 1px solid #000;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+menu div:hover {
+    background-color: #727272;
+    color: #fff;
+    cursor: pointer;
+}
+
+menu div:first-child {
+    margin-top: 3rem;
+    border-top: 1px solid #000;
+}
+
+main {
+    margin-left: 20%;
+    flex: 1;
+    padding: 2rem;
+}
+
+section {
+    display: none;
+    padding: 2rem 0;
+}
+
+body[data-section="media"] section[data-section="media"],
+body[data-section="users"] section[data-section="users"],
+body[data-section="loans"] section[data-section="loans"] {
+    display: block;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed;
+    margin-bottom: 1.5rem;
+}
+
+th, td {
+    border: 1px solid #333;
+    padding: 0.5rem;
+    text-align: center;
+    word-wrap: break-word;
+}
+
+th {
+    background-color: #f0f0f0;
+}
+
+tr:nth-child(even) {
+    background-color: #f7f7f7;
+}
+
+.active {
+    background-color: #727272;
+    color: #fff;
+}
+
+dialog {
+    border: none;
+    border-radius: 10px;
+    padding: 2rem;
+    background: #fff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 300px;
+    max-width: 90%;
+}
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+dialog form {
+    display: flex;
+    flex-direction: column;
+}
+
+dialog form menu {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin-top: 1rem;
+}
+
+dialog form menu button {
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    border: none;
+    background-color: #727272;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+dialog form menu button:hover {
+    background-color: #555;
+}
+
+#add-media-con {
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.5rem;
+    max-width: 400px;
+    margin: 0 auto 1rem;
+}
+
+#add-media-con input[type="text"],
+#add-media-con select {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+#add-media-con button {
+    width: fit-content;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    border: none;
+    background-color: #727272;
+    color: white;
+    cursor: pointer;
+}
+
+#add-media-con button:hover {
+    background-color: #555;
+}
+
+#quantity, #price {
+    width: 6rem;
+    padding: 0.5rem;
+}
+
+h3 {
+    margin-top: 1rem;
+}
+
+.unborrowed-media-container {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+}
+
+
+#enter-admin-password-dialog{
+    height: 12rem;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+#enter-admin-password-menu {
+    display: flex;
+    justify-self: center;
+    margin-top: 1rem;
+    height: 2rem;
+    width: 100%;
+    justify-content: space-around;
+    background-color: #fff;
+}
+
+
+/* Container för sökfält och dropdown */
+#search-input-book, #search-for-container {
+    font-family: inherit;
+}
+
+/* Sökfält */
+#search-input-book {
+    width: 250px;
+    padding: 8px 12px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+#search-input-audiobook {
+    width: 250px;
+    padding: 8px 12px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#search-input-movie {
+    width: 250px;
+    padding: 8px 12px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+
+#search-for-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#search-for-book {
+    padding: 7px 10px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+#search-for-audiobook {
+    padding: 7px 10px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+#search-for-movie {
+    padding: 7px 10px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+
+
+@media (max-width: 768px) {
+    menu {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        justify-content: space-around;
+        position: relative;
+    }
+
+    main {
+        margin-left: 0;
+        padding: 1rem;
+    }
+
+    #add-media-con {
+        max-width: 100%;
+    }
+
+    table {
+        font-size: 0.9rem;
+    }
 }
