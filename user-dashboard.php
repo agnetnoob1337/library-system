@@ -18,6 +18,7 @@ if (!isset($_SESSION['user_id'])) {
     <title>user dashboard</title>
 </head>
 <body>
+
     <a href="php/logout.php">Logga ut</a>
     <form action="php/password-change.php" method="post" target="_blank">
         <input type="hidden" name="userId" value="<?php echo $_SESSION['user_id'] ?>">
@@ -26,6 +27,7 @@ if (!isset($_SESSION['user_id'])) {
     <menu>
         <button id="checkout">Låna</button>
         <button id="return">Lämna tillbaka</button>
+        <button id="record-btn">Starta inspelning</button>
         <input type="search" id="search-input" placeholder="Sök media...">
         <div>
             <label for="media-type">Media typ:</label>
@@ -97,5 +99,50 @@ if (!isset($_SESSION['user_id'])) {
             </tbody>
         </table>
     </main>
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
+        const recordBtn = document.getElementById("record-btn");
+
+        recordBtn.onclick = async () => {
+            if(!isRecording){
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm; codecs=opus' });
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+                mediaRecorder.start();
+
+                recordBtn.textContent = 'Stoppa inspelning';
+                isRecording = true;
+            }
+            else {
+                if (!mediaRecorder) return;
+
+                mediaRecorder.stop();
+                mediaRecorder.onstop = async () => {
+                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const formData = new FormData();
+                    formData.append('audio', blob, 'recording.webm');
+
+                    try {
+                        const response = await fetch('google-api-call.php', { method: 'POST', body: formData });
+                        const result = await response.json();
+                        document.getElementById('search-input').value = result.transcript;
+                        const event = new Event('input', { bubbles: true });
+                        document.getElementById('search-input').dispatchEvent(event);
+                    } catch (e) {
+                        console.error(e);
+                        document.getElementById('search-input').value = 'Fel vid transkription';
+                    }
+                };
+                recordBtn.textContent = 'Starta inspelning';
+                isRecording = false;
+            }
+        };
+
+    </script>
 </body>
 </html>
