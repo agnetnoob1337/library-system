@@ -1,0 +1,70 @@
+.media-grid {
+    display: flex;
+    width: 1400px;
+
+}
+.media-grid > div {
+    width: 100%;
+}
+#media-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.media-name {
+    padding: 14px 0;
+}
+
+.media-icon {
+    width: 100%;
+    font-size: 2rem;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+}
+
+h2 {
+    margin: 0;
+    line-height: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+h4 {
+    text-transform: capitalize
+}
+
+.media-box {
+    display: block;
+    box-sizing: border-box;
+    padding: 1rem;
+    width: 18rem;
+    height: 25rem;
+
+    box-shadow: -20px 0 ;
+    margin-left: 20px;
+}
+.media-box > * {
+    color: black;
+}
+
+.bok{
+    background-color: rgb(122, 122, 233);
+    color: rgb(50, 51, 94);
+}
+.film {
+    background-color: green;
+    color: rgb(0, 88, 0);
+}
+.ljudbok {
+    background-color: brown;
+    color: rgb(133, 34, 34);
+}
+
+.top-bottom-flex {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
