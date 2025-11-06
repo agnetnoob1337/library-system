@@ -710,4 +710,26 @@ class ApiHandler{
         $stmt->execute();
         return $token;
     }
+
+    function getUsername($mail){
+        $getMailQuery = "SELECT username FROM users WHERE mail = ?";
+        $stmt = $this->conn->prepare($getMailQuery);
+        $stmt->bind_param("s", $mail);
+        $stmt->execute();
+        $result = $stmt->get_result();
+    
+        $row = $result->fetch_assoc();
+        return $row ? $row['username'] : null;
+    }
+
+    function getUserId($mail){
+        $getIDQuery = "SELECT id FROM users WHERE mail = ?";
+        $stmt = $this->conn->prepare($getIDQuery);
+        $stmt->bind_param("s", $mail);
+        $stmt->execute();
+        $result = $stmt->get_result();
+    
+        $row = $result->fetch_assoc();
+        return $row ? $row['id'] : null;
+    }
 }

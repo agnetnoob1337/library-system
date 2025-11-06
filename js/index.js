@@ -3,13 +3,71 @@ document.getElementById('showRegisterForm').addEventListener('click', function()
     document.getElementById('registerForm').style.display = 'block';
     document.getElementById('showLoginForm').style.display = 'block';
     document.getElementById('showRegisterForm').style.display = 'none';
+    document.getElementById('showMailForm').style.display = 'none';
+    document.getElementById('mailForm').style.display = 'none';
+    document.getElementById("mail-response-container").textContent = "";
 });
 document.getElementById('showLoginForm').addEventListener('click', function() {
     document.getElementById('registerForm').style.display = 'none';
     document.getElementById('loginForm').style.display = 'block';
     document.getElementById('showRegisterForm').style.display = 'block';
     document.getElementById('showLoginForm').style.display = 'none';
+    document.getElementById('showMailForm').style.display = 'block';
+    document.getElementById('mailForm').style.display = 'none';
+    document.getElementById("mail-response-container").textContent = "";
 });
+document.getElementById('showMailForm').addEventListener('click', function() {
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('showRegisterForm').style.display = 'none';
+    document.getElementById('showLoginForm').style.display = 'block';
+    document.getElementById('showMailForm').style.display = 'none';
+    document.getElementById('mailForm').style.display = 'block';
+    document.getElementById("mail-response-container").textContent = "";
+});
+
+document.getElementById('send-mail-btn').addEventListener('click', async function(e) {
+    e.preventDefault();
+
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('showRegisterForm').style.display = 'none';
+    document.getElementById('showLoginForm').style.display = 'block';
+    document.getElementById('showMailForm').style.display = 'none';
+    document.getElementById('mailForm').style.display = 'none';
+
+    const mail = document.getElementById("enter-mail").value;
+
+    const result = await getUsername(mail);
+    console.log(mail);
+    console.log(result);
+
+    if(result.status === 'ok'){
+        document.getElementById("mail-response-container").textContent = `Ett mail har skickats till ${mail}, klicka på länken för att återställa lösenordet`;
+        await sendResetMail(mail, result.username);
+    } else {
+        document.getElementById("mail-response-container").textContent = `Fel: ${result.message}`;
+    }
+});
+
+
+async function getUsername(mail) {
+    const response = await fetch('./php/get-username.php', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mail })
+    });
+    return await response.json();
+}
+
+async function sendResetMail(mail, username){
+    const response = await fetch('./php/password-change.php', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mail, username })
+    });
+    return await response.json();
+}
 
 async function checkUserExists(type, value) {
     const formData = new FormData();
