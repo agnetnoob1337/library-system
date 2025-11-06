@@ -283,6 +283,20 @@ if (!isset($_SESSION['user_id'])) {
                 </table>
             </div>
         </section>
+        <dialog id="enter-admin-password-dialog">
+            <form method="dialog" id="enter-admin-password-form">
+
+                <label for="password">
+                    Administratör lösenord:
+                </label>
+                <input type="password" class="password" name="password" />
+                    
+                <menu>
+                    <button value="submit">Submit</button>
+                    <button value="cancel">Cancel</button>
+                </menu>
+            </form>
+        </dialog>
     </main>
 
 </body>
