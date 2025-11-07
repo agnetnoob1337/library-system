@@ -51,7 +51,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
 
 
             var gridItem = document.createElement("div")
-            gridItem.classList("media-grid")
+            gridItem.classList.add("media-grid")
 
 
 
