@@ -199,14 +199,14 @@ document.addEventListener("DOMContentLoaded", function() {
         
         mediaContainer.classList.remove("grid-view")
         mediaContainer.classList.add("list-view")
-        mediaCatalog.classList.remove("media-grid");
+        mediaCatalog.classList.remove("media-catalog-grid");
         mediaCatalog.classList.add("media-list");
     });
     gridButton.addEventListener("click", function() {
         mediaContainer.classList.remove("list-view")
         mediaContainer.classList.add("grid-view")
         mediaCatalog.classList.remove("media-list");
-        mediaCatalog.classList.add("media-grid");
+        mediaCatalog.classList.add("media-catalog-grid");
     });
 });
 
