@@ -213,7 +213,7 @@ section {
 
 body[data-section="media"] section[data-section="media"],
 body[data-section="users"] section[data-section="users"],
-body[data-section="loans"] section[data-section="loans"] {
+body[data-section="borrowed"] section[data-section="borrowed"] {
     display: block;
 }
 
@@ -297,7 +297,8 @@ dialog form menu button:hover {
 }
 
 #add-media-con input[type="text"],
-#add-media-con select {
+#add-media-con select, 
+#add-media-con input[type="number"] {
     width: 100%;
     padding: 0.5rem;
     border-radius: 5px;
@@ -353,12 +354,10 @@ h3 {
 }
 
 
-/* Container för sökfält och dropdown */
 #search-input-book, #search-for-container {
     font-family: inherit;
 }
 
-/* Sökfält */
 #search-input-book {
     width: 250px;
     padding: 8px 12px;
@@ -446,4 +445,88 @@ h3 {
     table {
         font-size: 0.9rem;
     }
+}
+
+.btn-delete {
+    padding: 0.25rem 0.5rem;
+    border-radius: 5px;
+    border: none;
+    background-color: #727272;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 6rem;
+}
+.btn-delete:hover{
+    background-color: #555;
+}
+
+
+.btn-edit {
+    padding: 0.25rem 0.5rem;
+    margin-top: 0.125rem;
+    border-radius: 5px;
+    border: none;
+    background-color: #727272;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 6rem;
+}
+.btn-edit:hover{
+    background-color: #555;
+}
+
+
+#category-label, #media-type-label {
+    font-size: 0.8rem;
+    margin: 0 0 -0.5rem 0;
+    color: #555;
+    display: block;
+}
+
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+  
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 24px;
+}
+
+.slider::before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+    background-color: #4c7aaf;
+}
+
+.switch input:checked + .slider::before {
+    transform: translateX(26px);
 }

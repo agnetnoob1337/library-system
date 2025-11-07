@@ -10,7 +10,7 @@ $mediaData = json_decode($userInput, true);
 error_log("Raw input: " . $userInput);
 error_log("Decoded input: " . print_r($mediaData, true));
 
-if (isset($mediaData['title'], $mediaData['SABSignum'], $mediaData['ISBN'])) {
+if (isset($mediaData['title'], $mediaData['SABSignum'], $mediaData['price'], $mediaData['author']) && (isset($mediaData['ISBN']) || isset($mediaData['IMDB']))) {
     $title = $mediaData['title'];
     $author = $mediaData['author'] ?? "";
     $SABSignum = $mediaData['SABSignum'];
