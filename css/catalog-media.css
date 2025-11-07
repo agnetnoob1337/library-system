@@ -3,7 +3,8 @@ button {
 }
 
 menu {
-    width: 90vw;
+    width: 100%;
+    max-width: 82rem;
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -12,9 +13,9 @@ menu {
 
 main {
     width: 100%;
-    max-width: 80rem;
+    max-width: 82rem;
     box-sizing: border-box;
-    padding: 4rem;
+    /* padding: 4rem; */
     padding-top: 1rem;
 }
 
@@ -73,7 +74,7 @@ h4 {
     display: block;
     box-sizing: border-box;
 
-
+    border-radius: 0.5rem;
     box-shadow: -20px 0 ;
     margin-left: 20px;
 }
@@ -168,6 +169,7 @@ h4 {
     background-color: rgb(1, 107, 206);
     padding: 0.5rem;
     cursor: pointer;
+    border-radius: 0.5rem;
 }
 
 .loan-button:disabled,
@@ -419,4 +421,12 @@ h4 {
 
 .user-dropdown .logout {
     color: #b30000;
+    display: block;
+    width: calc(100% - 15px);
+    padding-right: 0;
+}
+
+select:focus {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
 }
