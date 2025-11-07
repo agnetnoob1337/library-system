@@ -64,7 +64,7 @@ if (!isset($_SESSION['user_id'])) {
 
     </menu>
     <main>
-        <div id="media-catalog"class="media-grid">
+        <div id="media-catalog">
             <div>
                 <p>Test: &#128191;</p>
                 <ul id="media-container">
