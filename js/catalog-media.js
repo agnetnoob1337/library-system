@@ -324,6 +324,7 @@ document.addEventListener("DOMContentLoaded", function() {
     mediaCatalog = document.getElementById("media-catalog");
     borrowedCatalog = document.getElementById("media-borrowed-container");
     mediaContainer.classList.add("grid-view")
+    mediaBorrowed.classList.add("grid-view")
 
     listButton.addEventListener("click", function() {
         
@@ -370,6 +371,19 @@ document.addEventListener("DOMContentLoaded", function() {
 
         mediaCatalog.classList.add("media-catalog-grid");
 
+    });
+
+    const btn = document.getElementById("user-menu-btn");
+    const menu = document.getElementById("user-dropdown");
+
+    btn.addEventListener("click", () => {
+        menu.style.display = menu.style.display === "block" ? "none" : "block";
+    });
+
+    document.addEventListener("click", e => {
+        if (!btn.contains(e.target) && !menu.contains(e.target)) {
+            menu.style.display = "none";
+        }
     });
 });
 

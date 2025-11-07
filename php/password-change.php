@@ -34,7 +34,7 @@ try {
         </html>';
 
     $mail->send();
-    header("Location: ../user-dashboard.php");
+    header("Location: ../media-display-page.php");
 } catch (Exception $e) {
     echo "Mail kunde inte skickas. Fel: {$mail->ErrorInfo}";
 }
