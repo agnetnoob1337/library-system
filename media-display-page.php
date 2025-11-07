@@ -61,13 +61,21 @@ if (!isset($_SESSION['user_id'])) {
             <button id="grid-button">Grid view</button>
             <button id="list-button">List view</button>
         </div>
+        <button id="show-user-loans">Dina lån</button>
+        <button id="show-media">Tillbaka</button>
 
     </menu>
     <main>
         <div id="media-catalog"class="media-grid">
             <div>
-                <p>Test: &#128191;</p>
                 <ul id="media-container">
+
+                </ul>
+            </div>
+        </div>
+        <div id="media-borrowed-container" class="media-grid">
+            <div>
+                <ul id="media-borrowed">
 
                 </ul>
             </div>
