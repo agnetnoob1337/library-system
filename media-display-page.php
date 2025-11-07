@@ -25,10 +25,24 @@ if (!isset($_SESSION['user_id'])) {
 </head>
 <body>
     <menu>
+        <input type="search" id="search-input" placeholder="Sök media...">
+        <div>
+            <label for="media-type">Media typ:</label>
+            <select name="media-type" id="media-type">
+                <option value="">Alla typer</option>
+                <option value="bok">Bok</option>
+                <option value="ljudbok">Ljudbok</option>
+                <option value="film">Film</option>
+            </select>
+        </div>
+        <div>
+            <button id="grid-button">Grid view</button>
+            <button id="list-button">List view</button>
+        </div>
 
     </menu>
     <main>
-        <div class="media-grid">
+        <div id="media-catalog"class="media-grid">
             <div>
                 <p>Test: &#128191;</p>
                 <ul id="media-container">
