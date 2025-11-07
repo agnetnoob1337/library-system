@@ -99,7 +99,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
 
             var loanButton = document.createElement("button")
             loanButton.classList.add("loan-button")
-            loanButton.appendChild(document.createTextNode("Boeeow"))
+            loanButton.appendChild(document.createTextNode("Låna"))
 
             // Loan button event listener
             loanButton.addEventListener("click", function() {
