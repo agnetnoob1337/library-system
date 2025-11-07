@@ -7,7 +7,7 @@ menu {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    border-radius: 3rem;
+    border-radius: 0.5rem;
 }
 
 main {
@@ -15,6 +15,7 @@ main {
     max-width: 80rem;
     box-sizing: border-box;
     padding: 4rem;
+    padding-top: 1rem;
 }
 
 .media-list {
@@ -119,7 +120,6 @@ h4 {
 }
 .list-view > * {
     padding: 1rem;
-    min-height: 10rem;
     box-shadow: none;
     background-color: rgba(44, 44, 44, 0.082);
     border-bottom: solid 1px;
@@ -216,7 +216,7 @@ h4 {
     width: 100%;
     padding: 8px 40px 8px 12px; /* space for the icon */
     border: 1px solid #ccc;
-    border-radius: 20px;
+    border-radius: 0.5rem;
     font-size: 1rem;
     outline: none;
     transition: border-color 0.2s ease;
@@ -284,7 +284,7 @@ h4 {
     color: white;
     border: none;
     padding: 0.6rem 1.2rem;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     font-size: 0.95rem;
     cursor: pointer;
     transition: background 0.25s, transform 0.1s;
@@ -346,7 +346,7 @@ h4 {
 
 .filter-select {
     padding: 0.55rem 0.75rem;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     border: 1px solid #b9b9b9;
     background: white;
     font-size: 0.9rem;
@@ -396,7 +396,7 @@ h4 {
     top: 45px;
     background: white;
     border: 1px solid #ddd;
-    border-radius: 10px;
+    border-radius: 0.5rem;
     width: 160px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     padding: 8px 0;
