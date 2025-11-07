@@ -14,15 +14,16 @@ if (!isset($_FILES['audio'])) {
     exit;
 }
 
-// Läs filen och base64-encode
+// get the audio file
 $audioFile = $_FILES['audio']['tmp_name'];
+// base64 encode the audio
 $audioData = base64_encode(file_get_contents($audioFile));
 
-// Google API-nyckel
+// get the api key and the url
 $apiKey = $inifile['API_KEY'];
 $url = "https://speech.googleapis.com/v1/speech:recognize?key=$apiKey";
 
-// Konfigurera för WebM/Opus (matchar MediaRecorder)
+// configure for webM/opus
 $requestBody = [
     'config' => [
         'encoding' => 'WEBM_OPUS',
@@ -34,7 +35,7 @@ $requestBody = [
     ]
 ];
 
-// POST request till Google API
+// poat request to the google api
 $options = [
     'http' => [
         'header'  => "Content-type: application/json\r\n",
@@ -43,6 +44,7 @@ $options = [
     ]
 ];
 
+// creates a stream context and makes the api call and gets the result
 $context  = stream_context_create($options);
 $response = file_get_contents($url, false, $context);
 
@@ -51,12 +53,13 @@ if ($response === FALSE) {
     exit;
 }
 
-// Hämta transkription
+// get the result
 $result = json_decode($response, true);
 $transcript = '';
 
 if (isset($result['results'])) {
     foreach ($result['results'] as $r) {
+        // get the result into a transcript
         $transcript .= $r['alternatives'][0]['transcript'] . ' ';
     }
     $transcript = trim($transcript);
@@ -64,6 +67,7 @@ if (isset($result['results'])) {
     $transcript = "Ingen transkription hittades.";
 }
 
+// echo the result
 echo json_encode(['transcript' => $transcript]);
 
 ?>
