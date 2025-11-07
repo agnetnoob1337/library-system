@@ -1,14 +1,18 @@
+button {
+    font-size: 1.2rem;
+}
+
+
+
 main {
     width: 100%;
+    max-width: 80rem;
+    box-sizing: border-box;
+    padding: 4rem;
 }
 
 
 
-.media-grid {
-    display: flex;
-    width: 1400px;
-
-}
 .media-list {
     width: 80%;
 
@@ -17,6 +21,10 @@ main {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
+    justify-content: flex-start;
+    margin: 0 auto;
+    max-width: 80vw;
+
 
 }
 
@@ -93,14 +101,16 @@ h4 {
 
 .grid-view > * {
     padding: 1rem;
-    width: 14rem;
+    max-width: 14rem;
+    min-width: 14rem;
     height: 20rem;
+
 }
 .list-view > * {
     padding: 1rem;
     min-height: 10rem;
     box-shadow: none;
-    background-color: transparent;
+    background-color: rgba(44, 44, 44, 0.082);
     border-bottom: solid 1px;
 }
 .list-view > .media-text-container {
@@ -111,6 +121,7 @@ h4 {
 .catalog-text-icon {
     display: flex;
     width: 100%;
+    justify-content: flex-end;
 }
 
 .grid-view .media-box > .catalog-text-icon {
@@ -122,6 +133,55 @@ h4 {
 }
 
 
+.media-catalog-grid {
+    display: flex;
+}
+
+.media-grid {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto 1fr;
+}
+.media-grid-list {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto 1fr;
+}
+
+
+.loan-button {
+    background-color: rgb(1, 107, 206);
+    padding: 0.5rem;
+}
+
+
+
+.grid-view .media-box .media-grid .grid-view-button {
+    grid-column: 1 / span 2;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    
+}
+
+.list-view .media-box .media-grid .grid-view-button {
+    grid-column: 1 / span 2;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    
+}
+
+
+.list-view .media-box .media-grid .text-div > div:nth-child(2) {
+    display: flex;
+    align-items: end;
+    
+}
 
 .search-bar {
     position: relative;
@@ -166,6 +226,7 @@ h4 {
 
 .record-btn.recording { 
     color: red;
+
 }
 .record-btn.recording:hover {
     color: darkred;

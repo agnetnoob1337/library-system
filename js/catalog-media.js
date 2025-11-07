@@ -12,6 +12,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
 
 
     var availableMediaTableBody = document.getElementById("media-container");
+    availableMediaTableBody.innerHTML = "";
 
     let params = new URLSearchParams();
     params.append("availableOnly", "true");
@@ -37,27 +38,46 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             var gridItem = document.createElement("div")
             gridItem.classList.add("media-grid")
 
-
-
-            //Top container for item
-
-
-
-
-
-
-            var topItem = document.createElement("div");
-
-
             var textItem = document.createElement("div")
-            var topItem = document.createElement("div")
-            var bottomItem = document.createElement("div")
+            var iconItem = document.createElement("div")
+            var bottomTextItem = document.createElement("div")
+            var loanItem = document.createElement("div")
+
+
+            var titleItem = document.createElement("div")
+            var descriptionItem = document.createElement("div")
 
 
 
-            topItem.classList.add("catalog-text-icon")
+
+            var titleCell = document.createElement("h2");
+            titleCell.textContent = media.title;
+
+            var authorCell = document.createElement("h3");
+            authorCell.innerHTML += "Skriven av: ";
+            var authorHeader = document.createElement("a");
+            authorHeader.textContent = media.author;
+            authorCell.appendChild(authorHeader);
+
+            var textLine = document.createTextNode(" | ")
             
 
+            
+            var categoryCell = document.createElement("div");
+            var SABRow = SABCategories.find(cat => cat.signum === media.SAB_signum);
+            categoryCell.textContent = SABRow.category;
+
+
+            titleItem.appendChild(titleCell)
+            descriptionItem.appendChild(authorCell)
+            descriptionItem.appendChild(authorHeader)
+            descriptionItem.appendChild(textLine)
+
+            descriptionItem.appendChild(categoryCell)
+            textItem.appendChild(titleItem)
+            textItem.appendChild(descriptionItem)
+
+            textItem.classList.add("text-div")
 
 
             var icon = document.createElement("div");
@@ -69,7 +89,92 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             } else if (media.mediatype == "film") {
                 icon.innerHTML = "&#128191";
             }
-            topItem.appendChild(icon);
+            iconItem.classList.add("catalog-text-icon")
+            iconItem.appendChild(icon)
+
+            var bottomItem = document.createElement("div");
+            var typeCell = document.createElement("h4");
+            typeCell.textContent = media.mediatype;
+            bottomTextItem.appendChild(typeCell)
+
+            var loanButton = document.createElement("button")
+            loanButton.classList.add("loan-button")
+            loanButton.appendChild(document.createTextNode("Boeeow"))
+
+            // Loan button event listener
+            loanButton.addEventListener("click", function() {
+                var mediaId = media.id; // use the current media's ID
+                fetch(`./php/media-checkout.php?mediaId=${mediaId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ mediaId: mediaId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Media utlånat!");
+                        loadAllMedia(); // reload updated list
+                    } else {
+                        alert("Fel vid utlåning: " + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error during checkout:", error);
+                    alert("Ett fel uppstod vid utlåning.");
+                });
+            });
+
+
+            
+            loanItem.classList.add("grid-view-button")
+            loanItem.appendChild(loanButton)
+            
+
+
+
+
+            gridItem.appendChild(textItem)
+            gridItem.appendChild(iconItem)
+            gridItem.appendChild(bottomTextItem)
+            gridItem.appendChild(document.createElement("div"))
+            gridItem.appendChild(loanItem)
+
+            
+
+            itemContainer.appendChild(gridItem)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            //Top container for item
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -78,27 +183,6 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             //#region ---------TEXT ELEMENTS----------------
             var textDiv = document.createElement("div");
             textDiv.classList.add("media-text-container")
-
-
-            var titleCell = document.createElement("h2");
-            titleCell.textContent = media.title;
-            textDiv.appendChild(titleCell);
-            
-            var authorCell = document.createElement("h3");
-            authorCell.innerHTML += "Skriven av: ";
-            var authorHeader = document.createElement("a");
-            authorHeader.textContent = media.author;
-            authorCell.appendChild(authorHeader);
-            textDiv.appendChild(authorCell);
-
-            var typeCell = document.createElement("h4");
-            typeCell.textContent = media.mediatype;
-            textDiv.appendChild(typeCell);
-
-            var categoryCell = document.createElement("div");
-            var SABRow = SABCategories.find(cat => cat.signum === media.SAB_signum);
-            categoryCell.textContent = SABRow.category;
-            textDiv.appendChild(categoryCell);
 
             fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
             .then(response => response.json())
@@ -109,15 +193,16 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
                 textDiv.appendChild(cellCopiesAvailable);
             }).catch(error => console.error("Error:", error));
 
-            topItem.appendChild(textDiv)
+            
             //#region--------------BOTTOM TEXT ELEMENTS-------------
+
             var bottomItem = document.createElement("div");
             var typeCell = document.createElement("h4");
             typeCell.textContent = media.mediatype;
             bottomItem.appendChild(typeCell);
 
-            itemContainer.appendChild(topItem);
-            itemContainer.appendChild(bottomItem)
+
+
             availableMediaTableBody.appendChild(itemContainer);
         });
     }).catch(error => {
@@ -242,11 +327,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
     listButton.addEventListener("click", function() {
         
+
         mediaContainer.classList.remove("grid-view");
         mediaContainer.classList.add("list-view");
         mediaBorrowed.classList.remove("grid-view"),
         mediaBorrowed.classList.add("list-view");
         mediaCatalog.classList.remove("media-grid");
+
+        mediaCatalog.classList.remove("media-catalog-grid");
+
         mediaCatalog.classList.add("media-list");
         borrowedCatalog.classList.remove("media-grid");
         borrowedCatalog.classList.add("media-list");
@@ -257,6 +346,7 @@ document.addEventListener("DOMContentLoaded", function() {
         mediaBorrowed.classList.remove("list-view");
         mediaBorrowed.classList.add("grid-view");
         mediaCatalog.classList.remove("media-list");
+
         mediaCatalog.classList.add("media-grid");
         borrowedCatalog.classList.remove("media-list");
         borrowedCatalog.classList.add("media-grid");
@@ -277,6 +367,9 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("show-media").style.display = "none";
         document.getElementById("show-user-loans").style.display = "block";
         document.getElementById("media-borrowed-container").style.display = "none";
+
+        mediaCatalog.classList.add("media-catalog-grid");
+
     });
 });
 
