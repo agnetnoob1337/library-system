@@ -12,6 +12,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
 
 
     var availableMediaTableBody = document.getElementById("media-container");
+    availableMediaTableBody.innerHTML = "";
 
     let params = new URLSearchParams();
     params.append("availableOnly", "true");
@@ -99,6 +100,33 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             var loanButton = document.createElement("button")
             loanButton.classList.add("loan-button")
             loanButton.appendChild(document.createTextNode("Boeeow"))
+
+            // Loan button event listener
+            loanButton.addEventListener("click", function() {
+                var mediaId = media.id; // use the current media's ID
+                fetch(`./php/media-checkout.php?mediaId=${mediaId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ mediaId: mediaId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Media utlånat!");
+                        loadAllMedia(); // reload updated list
+                    } else {
+                        alert("Fel vid utlåning: " + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error during checkout:", error);
+                    alert("Ett fel uppstod vid utlåning.");
+                });
+            });
+
+
             
             loanItem.classList.add("grid-view-button")
             loanItem.appendChild(loanButton)
