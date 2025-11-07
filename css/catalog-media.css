@@ -189,7 +189,7 @@ h4 {
     align-items: center;
     width: 100%;
     max-width: 400px;
-  }
+}
   
   #search-input {
     width: 100%;
@@ -199,13 +199,13 @@ h4 {
     font-size: 1rem;
     outline: none;
     transition: border-color 0.2s ease;
-  }
+}
   
-  #search-input:focus {
+#search-input:focus {
     border-color: #007bff;
-  }
-  
-  .record-btn {
+}
+
+.record-btn {
     position: absolute;
     right: 8px;
     top: 4px;
@@ -218,29 +218,37 @@ h4 {
     justify-content: center;
     color: #555;
     transition: color 0.2s ease;
-  }
-  
-  .record-btn:hover {
-    color: #007bff;
-  }
-  
-  .record-btn.recording {
-    color: red;
-  }
-    .record-btn.recording:hover {
-        color: darkred;
-    }
-    .record-icon {
-        font-size: 1.2rem;
-    }
-    .record-btn.recording svg {
-        animation: pulse 1s infinite;
-      }
-      
-      @keyframes pulse {
-        0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.2); opacity: 0.6; }
-        100% { transform: scale(1); opacity: 1; }
-      }
-        
+}
 
+.record-btn:hover {
+    color: #007bff;
+}
+
+.record-btn.recording { 
+    color: red;
+
+}
+.record-btn.recording:hover {
+    color: darkred;
+}
+.record-icon {
+    font-size: 1.2rem;
+}
+.record-btn.recording svg {
+    animation: pulse 1s infinite;
+}
+    
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.6; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.return-media-button {
+    width: 4rem;
+    height: 2rem;
+}
+
+#show-media{
+    display: none;
+}

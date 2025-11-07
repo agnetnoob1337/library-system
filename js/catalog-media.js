@@ -196,9 +196,11 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             
             //#region--------------BOTTOM TEXT ELEMENTS-------------
 
+            var bottomItem = document.createElement("div");
+            var typeCell = document.createElement("h4");
+            typeCell.textContent = media.mediatype;
+            bottomItem.appendChild(typeCell);
 
-
-            
 
 
             availableMediaTableBody.appendChild(itemContainer);
@@ -210,31 +212,164 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
 
 
 
+function loadBorrowedMedia() {
+    var borrowedMediaContainer = document.getElementById("media-borrowed"); 
+    borrowedMediaContainer.innerHTML = ""; // töm container innan vi lägger till nytt
 
+    fetch("./php/get-user-loans.php")
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
 
+            data.forEach(loan => {
+                var itemContainer = document.createElement("li");
+                itemContainer.classList.add("media-box", "top-bottom-flex");
+                itemContainer.classList.add(loan.mediatype);
 
+                var topItem = document.createElement("div");
+                topItem.classList.add("catalog-text-icon");
 
+                var icon = document.createElement("div");
+                icon.classList.add("media-icon");
+                if (loan.mediatype == "bok") {
+                    icon.innerHTML = "&#128216";
+                } else if (loan.mediatype == "ljudbok") {
+                    icon.innerHTML = "&#127911";
+                } else if (loan.mediatype == "film") {
+                    icon.innerHTML = "&#128191";
+                }
+                topItem.appendChild(icon);
+
+                var textDiv = document.createElement("div");
+                textDiv.classList.add("media-text-container");
+
+                var titleCell = document.createElement("h2");
+                titleCell.textContent = loan.title;
+                textDiv.appendChild(titleCell);
+
+                var authorCell = document.createElement("h3");
+                authorCell.innerHTML += "Skriven av: ";
+                var authorHeader = document.createElement("a");
+                authorHeader.textContent = loan.author;
+                authorCell.appendChild(authorHeader);
+                textDiv.appendChild(authorCell);
+
+                var typeCell = document.createElement("h4");
+                typeCell.textContent = loan.mediatype;
+                textDiv.appendChild(typeCell);
+
+                // var categoryCell = document.createElement("div");
+                // var SABRow = SABCategories.find(cat => cat.signum === loan.SAB_signum);
+                // categoryCell.textContent = SABRow.category;
+                // textDiv.appendChild(categoryCell);
+
+                // förfallodatum
+                var dueDateCell = document.createElement("div");
+                dueDateCell.textContent = "Återlämnas: " + loan.return_date;
+                textDiv.appendChild(dueDateCell);
+
+                topItem.appendChild(textDiv);
+
+                var bottomItem = document.createElement("div");
+                var mediaTypeBottom = document.createElement("h4");
+                mediaTypeBottom.textContent = loan.mediatype;
+                bottomItem.appendChild(mediaTypeBottom);
+
+                var returnMediaButton = document.createElement("button");
+                returnMediaButton.classList.add("return-media-button");
+                returnMediaButton.textContent = "Lämna tillbaka";
+                returnMediaButton.addEventListener("click", function() {
+                    returnMedia(loan.c_id, loan.id);
+                });
+
+                itemContainer.appendChild(topItem);
+                itemContainer.appendChild(bottomItem);
+                itemContainer.appendChild(returnMediaButton)
+                borrowedMediaContainer.appendChild(itemContainer);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching user loans:', error);
+        });
+}
+
+function returnMedia(copyId, mediaId, userId){
+    console.log(copyId);
+    fetch("./php/media-return.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            mediaId: Number(mediaId), copyId: Number(copyId), userId: Number(userId)
+        })
+    }).then(response => {
+        return response.text();
+    }).then(data => {
+        console.log(data);
+        loadBorrowedMedia();
+        alert("Media returned successfully!");
+    }).catch(error => {
+        console.error("Error:", error);
+        alert("An error occurred while returning media.");
+    });
+}
 
 document.addEventListener("DOMContentLoaded", function() {
     gridButton = document.getElementById("grid-button");
     listButton = document.getElementById("list-button");
 
     mediaContainer = document.getElementById("media-container");
+    mediaBorrowed = document.getElementById("media-borrowed");
     mediaCatalog = document.getElementById("media-catalog");
+    borrowedCatalog = document.getElementById("media-borrowed-container");
     mediaContainer.classList.add("grid-view")
 
     listButton.addEventListener("click", function() {
         
-        mediaContainer.classList.remove("grid-view")
-        mediaContainer.classList.add("list-view")
+
+        mediaContainer.classList.remove("grid-view");
+        mediaContainer.classList.add("list-view");
+        mediaBorrowed.classList.remove("grid-view"),
+        mediaBorrowed.classList.add("list-view");
+        mediaCatalog.classList.remove("media-grid");
+
         mediaCatalog.classList.remove("media-catalog-grid");
+
         mediaCatalog.classList.add("media-list");
+        borrowedCatalog.classList.remove("media-grid");
+        borrowedCatalog.classList.add("media-list");
     });
     gridButton.addEventListener("click", function() {
-        mediaContainer.classList.remove("list-view")
-        mediaContainer.classList.add("grid-view")
+        mediaContainer.classList.remove("list-view");
+        mediaContainer.classList.add("grid-view");
+        mediaBorrowed.classList.remove("list-view");
+        mediaBorrowed.classList.add("grid-view");
         mediaCatalog.classList.remove("media-list");
+
+        mediaCatalog.classList.add("media-grid");
+        borrowedCatalog.classList.remove("media-list");
+        borrowedCatalog.classList.add("media-grid");
+    });
+
+    const showUserLoans = document.getElementById("show-user-loans");
+    showUserLoans.addEventListener('click', () => {
+        document.getElementById("media-catalog").style.display = "none";
+        document.getElementById("show-media").style.display = "block";
+        document.getElementById("show-user-loans").style.display = "none";
+        document.getElementById("media-borrowed-container").style.display = "block";
+        
+        loadBorrowedMedia();
+    });
+    const showMedia = document.getElementById("show-media");
+    showMedia.addEventListener('click', () => {
+        document.getElementById("media-catalog").style.display = "block";
+        document.getElementById("show-media").style.display = "none";
+        document.getElementById("show-user-loans").style.display = "block";
+        document.getElementById("media-borrowed-container").style.display = "none";
+
         mediaCatalog.classList.add("media-catalog-grid");
+
     });
 });
 
