@@ -54,7 +54,12 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             titleCell.textContent = media.title;
 
             var authorCell = document.createElement("h3");
-            authorCell.innerHTML += "Skriven av: ";
+            if(media.mediatype == "film"){
+                authorCell.innerHTML += "Regisserad av: ";
+            }
+            else if(media.mediatype == "bok" || media.mediatype == "ljudbok"){
+                authorCell.innerHTML += "Skriven av: ";
+            }
             var authorHeader = document.createElement("a");
             authorHeader.textContent = media.author;
             authorCell.appendChild(authorHeader);
@@ -258,7 +263,12 @@ function loadBorrowedMedia() {
                 textDiv.appendChild(titleCell);
 
                 var authorCell = document.createElement("h3");
-                authorCell.innerHTML += "Skriven av: ";
+                if(loan.mediatype == "film"){
+                    authorCell.innerHTML += "Regisserad av: ";
+                }
+                else if(loan.mediatype == "bok" || loan.mediatype == "ljudbok"){
+                    authorCell.innerHTML += "Skriven av: ";
+                }
                 var authorHeader = document.createElement("a");
                 authorHeader.textContent = loan.author;
                 authorCell.appendChild(authorHeader);

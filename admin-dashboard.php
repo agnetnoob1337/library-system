@@ -29,10 +29,8 @@ if (!isset($_SESSION['user_id'] ) || !$_SESSION['is_admin']) {
         <div class="menu-item" data-target="borrowed">
             <h3>Utlånat</h3>
         </div>
-        <div class="menu-item" onclick="window.location.href='php/logout.php'">
-            <h3>Logga ut</h3>
-        </div>
         <p id="edit-time-left"></p>
+        <a href="php/logout.php" id="logout-link">Logga ut</a>
     </menu>
     <main>
         <!-- handle media section -->
