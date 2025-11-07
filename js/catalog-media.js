@@ -184,14 +184,24 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             var textDiv = document.createElement("div");
             textDiv.classList.add("media-text-container")
 
-            fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
+            fetch("./php/get-copies-of-media.php?id=" + media.id + "&availableOnly=true")
             .then(response => response.json())
             .then(data => {
-                var cellCopiesAvailable = document.createElement("div");
-                cellCopiesAvailable.textContent = "";
-                cellCopiesAvailable.textContent = "Tillgängliga exemplar: " + data.copies.length;
+                const cellCopiesAvailable = document.createElement("div");
+                const availableCount = data.copies.length;
+            
+                cellCopiesAvailable.textContent = "Tillgängliga exemplar: " + availableCount;
                 textDiv.appendChild(cellCopiesAvailable);
-            }).catch(error => console.error("Error:", error));
+            
+                // 🟡 Disable the loan button if no copies
+                if (availableCount === 0) {
+                    loanButton.disabled = true;
+                    loanButton.textContent = "Ej tillgänglig";
+                    loanButton.classList.add("disabled-loan");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+            
 
             
             //#region--------------BOTTOM TEXT ELEMENTS-------------
