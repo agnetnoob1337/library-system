@@ -48,10 +48,33 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             var itemContainer = document.createElement("li");
             itemContainer.classList.add("media-box", "top-bottom-flex");
             itemContainer.classList.add(media.mediatype);
-            //Top container for item
-            var topItem = document.createElement("div")
 
+
+            var gridItem = document.createElement("div")
+            gridItem.classList("media-grid")
+
+
+
+            //Top container for item
+
+
+
+
+
+
+            var topItem = document.createElement("div");
+
+
+            var textItem = document.createElement("div")
+            var topItem = document.createElement("div")
+            var bottomItem = document.createElement("div")
+
+
+
+            topItem.classList.add("catalog-text-icon")
             
+
+
 
             var icon = document.createElement("div");
             icon.classList.add("media-icon");
@@ -64,33 +87,34 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             }
             topItem.appendChild(icon);
 
+
+
+
+            
+            //#region ---------TEXT ELEMENTS----------------
+            var textDiv = document.createElement("div");
+            textDiv.classList.add("media-text-container")
+
+
             var titleCell = document.createElement("h2");
             titleCell.textContent = media.title;
-            topItem.appendChild(titleCell);
+            textDiv.appendChild(titleCell);
             
-
             var authorCell = document.createElement("h3");
             authorCell.innerHTML += "Skriven av: ";
             var authorHeader = document.createElement("a");
             authorHeader.textContent = media.author;
             authorCell.appendChild(authorHeader);
-            topItem.appendChild(authorCell);
+            textDiv.appendChild(authorCell);
 
             var typeCell = document.createElement("h4");
             typeCell.textContent = media.mediatype;
-            topItem.appendChild(typeCell);
-
-
-
-
-
+            textDiv.appendChild(typeCell);
 
             var categoryCell = document.createElement("div");
             var SABRow = SABCategories.find(cat => cat.signum === media.SAB_signum);
             categoryCell.textContent = SABRow.category;
-            topItem.appendChild(categoryCell);
-
-
+            textDiv.appendChild(categoryCell);
 
             fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
             .then(response => response.json())
@@ -100,19 +124,19 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
                 data.copies.forEach(copy => {
                     cellCopiesAvailable.textContent += "("+copy.id+"), ";
                 });
-                topItem.appendChild(cellCopiesAvailable);
-            })
-            .catch(error => console.error("Error:", error));
+                textDiv.appendChild(cellCopiesAvailable);
+            }).catch(error => console.error("Error:", error));
 
-
+            topItem.appendChild(textDiv)
+            //#region--------------BOTTOM TEXT ELEMENTS-------------
             var bottomItem = document.createElement("div");
-
             var typeCell = document.createElement("h4");
             typeCell.textContent = media.mediatype;
-
-
             bottomItem.appendChild(typeCell)
+
+
             
+
             itemContainer.appendChild(topItem);
             itemContainer.appendChild(bottomItem)
             availableMediaTableBody.appendChild(itemContainer);
@@ -121,3 +145,33 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
         console.error('Error fetching media data:', error);
     });
 };
+
+
+
+
+
+
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    gridButton = document.getElementById("grid-button");
+    listButton = document.getElementById("list-button");
+
+    mediaContainer = document.getElementById("media-container");
+    mediaCatalog = document.getElementById("media-catalog");
+    mediaContainer.classList.add("grid-view")
+
+    listButton.addEventListener("click", function() {
+        
+        mediaContainer.classList.remove("grid-view")
+        mediaContainer.classList.add("list-view")
+        mediaCatalog.classList.remove("media-grid");
+        mediaCatalog.classList.add("media-list");
+    });
+    gridButton.addEventListener("click", function() {
+        mediaContainer.classList.remove("list-view")
+        mediaContainer.classList.add("grid-view")
+        mediaCatalog.classList.remove("media-list");
+        mediaCatalog.classList.add("media-grid");
+    });
+});
