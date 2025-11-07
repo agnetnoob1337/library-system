@@ -120,3 +120,66 @@ h4 {
     flex-direction: row-reverse;
     justify-content: space-between;
 }
+
+
+
+.search-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  #search-input {
+    width: 100%;
+    padding: 8px 40px 8px 12px; /* space for the icon */
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+  
+  #search-input:focus {
+    border-color: #007bff;
+  }
+  
+  .record-btn {
+    position: absolute;
+    right: 8px;
+    top: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    transition: color 0.2s ease;
+  }
+  
+  .record-btn:hover {
+    color: #007bff;
+  }
+  
+  .record-btn.recording {
+    color: red;
+  }
+    .record-btn.recording:hover {
+        color: darkred;
+    }
+    .record-icon {
+        font-size: 1.2rem;
+    }
+    .record-btn.recording svg {
+        animation: pulse 1s infinite;
+      }
+      
+      @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.2); opacity: 0.6; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+        
