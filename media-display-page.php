@@ -24,18 +24,6 @@ if (!isset($_SESSION['user_id'])) {
     <title>user dashboard</title>
 </head>
 <body>
-    <header class="user-header">
-        <div class="user-menu">
-            <button class="user-icon" id="user-menu-btn">👤</button>
-            <div class="user-dropdown" id="user-dropdown">
-                <form action="php/password-change.php" method="post" target="_blank">
-                    <input type="hidden" name="userId" value="<?php echo $_SESSION['user_id'] ?>">
-                    <button type="submit" class="dropdown-item">Ändra lösenord</button>
-                </form>
-                <a href="php/logout.php" class="dropdown-item logout">Logga ut</a>
-            </div>
-        </div>
-    </header>
     <menu>
         <div class="search-bar">
             <input type="search" id="search-input" placeholder="Sök media..." />
@@ -73,7 +61,16 @@ if (!isset($_SESSION['user_id'])) {
             <button id="show-user-loans" class="btn nav-btn">📚 Dina lån</button>
             <button id="show-media" class="btn nav-btn">⬅️ Tillbaka</button>
         </div>
-
+        <div class="user-menu">
+            <button class="user-icon" id="user-menu-btn">👤</button>
+            <div class="user-dropdown" id="user-dropdown">
+                <form action="php/password-change.php" method="post" target="_blank">
+                    <input type="hidden" name="userId" value="<?php echo $_SESSION['user_id'] ?>">
+                    <button type="submit" class="dropdown-item">Ändra lösenord</button>
+                </form>
+                <a href="php/logout.php" class="dropdown-item logout">Logga ut</a>
+            </div>
+        </div>
 
     </menu>
     <main>
