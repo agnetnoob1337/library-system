@@ -24,11 +24,18 @@ if (!isset($_SESSION['user_id'])) {
     <title>user dashboard</title>
 </head>
 <body>
-    <a href="php/logout.php">Logga ut</a>
-    <form action="php/password-change.php" method="post" target="_blank">
-        <input type="hidden" name="userId" value="<?php echo $_SESSION['user_id'] ?>">
-        <button type="submit">Ändra lösenord</button>
-    </form>
+    <header class="user-header">
+        <div class="user-menu">
+            <button class="user-icon" id="user-menu-btn">👤</button>
+            <div class="user-dropdown" id="user-dropdown">
+                <form action="php/password-change.php" method="post" target="_blank">
+                    <input type="hidden" name="userId" value="<?php echo $_SESSION['user_id'] ?>">
+                    <button type="submit" class="dropdown-item">Ändra lösenord</button>
+                </form>
+                <a href="php/logout.php" class="dropdown-item logout">Logga ut</a>
+            </div>
+        </div>
+    </header>
     <menu>
         <div class="search-bar">
             <input type="search" id="search-input" placeholder="Sök media..." />
@@ -39,30 +46,34 @@ if (!isset($_SESSION['user_id'])) {
             </button>
         </div>
 
-        <div>
-            <label for="media-type">Media typ:</label>
-            <select name="media-type" id="media-type">
+        <div class="filter-group">
+            <label for="media-type">Media typ</label>
+            <select name="media-type" id="media-type" class="filter-select">
                 <option value="">Alla typer</option>
                 <option value="bok">Bok</option>
                 <option value="ljudbok">Ljudbok</option>
                 <option value="film">Film</option>
             </select>
         </div>
-        <div>
-            <label for="media-type">Sök efter:</label>
-            <select name="media-type" id="search-for">
+        <div class="filter-group">
+            <label for="search-for">Sök efter</label>
+            <select name="media-type" id="search-for" class="filter-select">
                 <option value="">Allt</option>
                 <option value="title">Titel</option>
                 <option value="category">Kategori</option>
                 <option value="author">Författare/regissör</option>
             </select>
         </div>
-        <div>
-            <button id="grid-button">Grid view</button>
-            <button id="list-button">List view</button>
+        <div id="view-options-container" class="btn-group">
+            <button id="grid-button" class="btn toggle-btn">🔳 Rutnät</button>
+            <button id="list-button" class="btn toggle-btn">📄 Lista</button>
         </div>
-        <button id="show-user-loans">Dina lån</button>
-        <button id="show-media">Tillbaka</button>
+
+        <div class="btn-group navigation-group">
+            <button id="show-user-loans" class="btn nav-btn">📚 Dina lån</button>
+            <button id="show-media" class="btn nav-btn">⬅️ Tillbaka</button>
+        </div>
+
 
     </menu>
     <main>
@@ -73,7 +84,7 @@ if (!isset($_SESSION['user_id'])) {
                 </ul>
             </div>
         </div>
-        <div id="media-borrowed-container" class="media-grid">
+        <div id="media-borrowed-container">
             <div>
                 <ul id="media-borrowed">
 
