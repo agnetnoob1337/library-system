@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
             minutes = minutes < 10 ? "0" + minutes : minutes;
             seconds = seconds < 10 ? "0" + seconds : seconds;
 
-            timerDisplay.textContent = `Redigerings tid kvar: ${minutes}:${seconds}`;
+            timerDisplay.textContent = `Redigeringstid kvar: ${minutes}:${seconds}`;
 
             if (timeLeft <= 0) {
                 clearInterval(timer);
@@ -49,65 +49,68 @@ document.addEventListener('DOMContentLoaded', function() {
     //#endregion
 
     loadAllMedia();
-
+    loadAllUsers();
     //#region get users
-    fetch("./php/get-users.php").then(response => {
-        return response.json();
-    }).then(data => {
-        console.log(data); 
+    function loadAllUsers(){
+        fetch("./php/get-users.php").then(response => {
+            return response.json();
+        }).then(data => {
+            console.log(data); 
+            var usersTableBody = document.getElementById("users-table-body");
+            usersTableBody.innerHTML = "";
+            data.forEach(user => {
+                var row = document.createElement("tr");
+                var selectionCell = document.createElement("td");
 
-        var usersTableBody = document.getElementById("users-table-body");
+                var deleteUserButton = document.createElement("button")
+                deleteUserButton.value = user.id;
+                deleteUserButton.textContent = "Ta bort";
+                deleteUserButton.classList.add("btn-delete");
+                deleteUserButton.addEventListener("click", function() {
+                    if (canEdit) {
+                        deleteUser(this);
+                    } else {
+                        enterAdminPassword(this);
+                    }
+                });
+                //deleteUserButton.addEventListener("click", function() { deleteUser(this); });
+                selectionCell.appendChild(deleteUserButton);
 
-        data.forEach(user => {
-            var row = document.createElement("tr");
-            var selectionCell = document.createElement("td");
+                var editUserButton = document.createElement("button")
+                editUserButton.value = user.id;
+                editUserButton.textContent = "Redigera";
+                editUserButton.classList.add("btn-edit");
+                editUserButton.addEventListener("click", function() {
+                    if (canEdit) {
+                        editUser(this);
+                    } else {
+                        enterAdminPassword(this);
+                    }
+                });
+                selectionCell.appendChild(editUserButton);
 
-            var deleteUserButton = document.createElement("button")
-            deleteUserButton.value = user.id;
-            deleteUserButton.textContent = "Ta bort";
-            deleteUserButton.addEventListener("click", function() {
-                if (canEdit) {
-                    deleteUser(this);
+                row.appendChild(selectionCell);
+
+                var usernameCell = document.createElement("td");
+                usernameCell.textContent = user.username;
+                row.appendChild(usernameCell);
+
+                var mailCell = document.createElement("td");
+                mailCell.textContent = user.mail;
+                row.appendChild(mailCell);
+
+                var isAdmin = document.createElement("td");
+                if(user.is_admin) {
+                    isAdmin.textContent = "Ja";
                 } else {
-                    enterAdminPassword(this);
+                    isAdmin.textContent = "Nej";
                 }
+                row.appendChild(isAdmin);
+
+                usersTableBody.appendChild(row);
             });
-            //deleteUserButton.addEventListener("click", function() { deleteUser(this); });
-            selectionCell.appendChild(deleteUserButton);
-
-            var editUserButton = document.createElement("button")
-            editUserButton.value = user.id;
-            editUserButton.textContent = "Redigera";
-            editUserButton.addEventListener("click", function() {
-                if (canEdit) {
-                    editUser(this);
-                } else {
-                    enterAdminPassword(this);
-                }
-            });
-            selectionCell.appendChild(editUserButton);
-
-            row.appendChild(selectionCell);
-
-            var usernameCell = document.createElement("td");
-            usernameCell.textContent = user.username;
-            row.appendChild(usernameCell);
-
-            var mailCell = document.createElement("td");
-            mailCell.textContent = user.mail;
-            row.appendChild(mailCell);
-
-            var isAdmin = document.createElement("td");
-            if(user.is_admin) {
-                isAdmin.textContent = "Ja";
-            } else {
-                isAdmin.textContent = "Nej";
-            }
-            row.appendChild(isAdmin);
-
-            usersTableBody.appendChild(row);
         });
-    });
+    }
     //#endregion
     
     //#region add media
@@ -120,22 +123,6 @@ document.addEventListener('DOMContentLoaded', function() {
         var quantity = document.getElementById("quantity").value;
         var price = document.getElementById("price").value;
         var IMDB = document.getElementById("imdb").value;
-
-        // if(mediaType == "book") {
-        //     var film = false;
-        //     var audioBook = false;
-        //     var book = true;
-        // }
-        // else if(mediaType == "audiobook") {
-        //     var film = false;
-        //     var audioBook = true;
-        //     var book = false;
-        // }
-        // else if(mediaType == "film") {
-        //     var film = true;
-        //     var audioBook = false;
-        //     var book = false;
-        // }
         
         console.log({ signum, title, author, ISBN, price, quantity, mediaType });
         fetch("./php/add-media.php", {
@@ -148,18 +135,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: title,
                 author: author,
                 ISBN: ISBN,
-                //film: film,
-                //audioBook: audioBook,
-                //book: book,
                 price: price,
                 quantity: quantity,
                 IMDB: IMDB,
                 mediaType: mediaType
             })
-        }).then(response => {
-            return response.text();
-        }).then(data => {
+        }).then(response => response.json())
+        .then(data => {
             console.log(data);
+            if(data.error){
+                alert("Error: " + data.error);
+                return;
+            }
             alert("Media added successfully!");
             loadAllMedia();
         }).catch(error => {
@@ -184,15 +171,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 quantityCopy: quantityCopy
 
             })
-        }).then(response => {
-            return response.text();
-        }).then(data => {
+        }).then(response => response.json())
+        .then(data => {
             console.log(data);
-            alert("Media added successfully!");
+            if(data.error){
+                alert("Error: " + data.error);
+                return;
+            }
+            alert("Copies added successfully!");
             loadAllMedia();
         }).catch(error => {
             console.error("Error:", error);
-            alert("An error occurred while adding media.");
+            alert("An error occurred while adding copies.");
+        });
+    });
+    //#endregion
+
+    //#region removes a copiy of media
+    document.getElementById("remove-copy").addEventListener("click", () => {
+        var copyId = document.getElementById("copy-id").value;
+
+        fetch("./php/remove-copy.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                copyId: copyId
+            })
+        }).then(response => response.json())
+        .then(data => {
+            console.log(data);
+            if(data.error){
+                alert("Error: " + data.error);
+                return;
+            }
+            alert("Copy removed successfully!");
+            loadAllMedia();
+        }).catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred while removing copy.");
         });
     });
     //#endregion
@@ -214,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    //#region remove a copy
+    //#region remove a media
     function removeCopy(e) {
         const mediaId = e.value;
 
@@ -234,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }).then(data => {
                 console.log(data);
                 alert("Media copy removed successfully!");
-                location.reload();
+                loadAllMedia();
             }).catch(error => {
                 console.error("Error:", error);
                 alert("An error occurred while removing media copy.");
@@ -353,33 +371,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     //#region return a media
     document.getElementById("return-media").addEventListener('click', () => {
-        //var checkboxes = document.querySelectorAll('#unavailable-media-table-body input[type="checkbox"]:checked');
-        var selectedCheckbox = document.querySelector('#unavailable-media-table-body input[type="checkbox"]:checked');
-        //var mediaIds = Array.from(checkboxes).map(checkbox => checkbox.value);
-        if(selectedCheckbox){
-            //var mediaId = Array.from(checkboxes).map(checkbox => Number(checkbox.value));
-            //var copyId = Array.from(checkboxes).map(checkbox => Number(checkbox.dataset.copyId));
-            var mediaId = selectedCheckbox.value;
-            var copyId = selectedCheckbox.dataset.copyId;
-            var userId = selectedCheckbox.dataset.userId;
-            fetch("./php/media-return.php", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    mediaId: Number(mediaId), copyId: Number(copyId), userId: Number(userId)
-                })
-            }).then(response => {
-                return response.text();
-            }).then(data => {
-                console.log(data);
-                alert("Media returned successfully!");
-                location.reload();
-            }).catch(error => {
-                console.error("Error:", error);
-                alert("An error occurred while returning media.");
-            });
+        if(canEdit){
+            //var checkboxes = document.querySelectorAll('#unavailable-media-table-body input[type="checkbox"]:checked');
+            var selectedCheckbox = document.querySelector('#unavailable-media-table-body input[type="checkbox"]:checked');
+            //var mediaIds = Array.from(checkboxes).map(checkbox => checkbox.value);
+            if(selectedCheckbox){
+                //var mediaId = Array.from(checkboxes).map(checkbox => Number(checkbox.value));
+                //var copyId = Array.from(checkboxes).map(checkbox => Number(checkbox.dataset.copyId));
+                var mediaId = selectedCheckbox.value;
+                var copyId = selectedCheckbox.dataset.copyId;
+                var userId = selectedCheckbox.dataset.userId;
+                fetch("./php/media-return.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        mediaId: Number(mediaId), copyId: Number(copyId), userId: Number(userId)
+                    })
+                }).then(response => {
+                    return response.text();
+                }).then(data => {
+                    console.log(data);
+                    alert("Media returned successfully!");
+                    loadAllMedia();
+                }).catch(error => {
+                    console.error("Error:", error);
+                    alert("An error occurred while returning media.");
+                });
+            }
+        }
+        else if(!canEdit){
+            enterAdminPassword();
         }
     });
     //#endregion
@@ -388,7 +411,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener("click", (e) => {
             document.querySelectorAll(".menu-item").forEach(item => item.classList.remove("active"));
             btn.classList.add("active");
-          document.body.dataset.section = btn.dataset.target;
+            document.body.dataset.section = btn.dataset.target;
         });
     });
 
@@ -436,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }).then(data => {
                 console.log(data);
                 alert("User added successfully!");
-                location.reload();
+                loadAllUsers();
             }).catch(error => {
                 console.error("Error:", error);
                 alert("An error occurred while adding user.");
@@ -541,7 +564,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }).then(data => {
                 console.log(data);
                 alert("User edited successfully!");
-                location.reload();
+                loadAllUsers();
             }).catch(error => {
                 console.error("Error:", error);
                 alert("An error occurred while editing user.");
@@ -562,7 +585,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 
-      //#region delete a user
+    //#region delete a user
     function deleteUser(e) {
         const userId = e.value;
 
@@ -583,12 +606,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }).then(data => {
             console.log(data);
             alert("User deleted successfully!");
-            location.reload();
+            loadAllUsers();
         }).catch(error => {
             console.error("Error:", error);
             alert("An error occurred while deleting user.");
         });
-
     };
       //#endregion
 
@@ -750,6 +772,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
                 var deleteCopyButton = document.createElement("button");
                 deleteCopyButton.textContent = "Ta bort";
                 deleteCopyButton.value = media.id;
+                deleteCopyButton.classList.add("btn-delete");        
                 // deleteCopyButton.addEventListener("click", function(e) { 
                 //     removeCopy(e.target);
                 // });
@@ -760,57 +783,58 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
                         enterAdminPassword(e.target);
                     }
                 });
-                    selectionCell.appendChild(deleteCopyButton);
-        
-                    var editCopyButton = document.createElement("button");
-                    editCopyButton.textContent = "Redigera";
-                    editCopyButton.value = media.id;
-                    editCopyButton.addEventListener("click", function(e) { 
-                        if (canEdit) {
-                        editCopy(e.target);
-                    } else {
-                        enterAdminPassword(e.target);
-                    }
+                selectionCell.appendChild(deleteCopyButton);
+    
+                var editCopyButton = document.createElement("button");
+                editCopyButton.textContent = "Redigera";
+                editCopyButton.value = media.id;
+                editCopyButton.classList.add("btn-edit");
+                editCopyButton.addEventListener("click", function(e) { 
+                    if (canEdit) {
+                    editCopy(e.target);
+                } else {
+                    enterAdminPassword(e.target);
+                }
+                });
+                selectionCell.appendChild(editCopyButton);
+    
+                row.appendChild(selectionCell);
+    
+                var titleCell = document.createElement("td");
+                titleCell.textContent = media.title;
+                row.appendChild(titleCell);
+
+                var authorCell = document.createElement("td");
+                authorCell.textContent = media.author;
+                row.appendChild(authorCell);
+
+                var priceCell = document.createElement("td");
+                priceCell.textContent = media.price;
+                row.appendChild(priceCell);
+
+                var isbnCell = document.createElement("td");
+                isbnCell.textContent = media.ISBN;
+                row.appendChild(isbnCell);
+
+                var categoryCell = document.createElement("td");
+                categoryCell.textContent = media.SAB_signum;
+                row.appendChild(categoryCell);
+
+                var mediaIDCell = document.createElement("td");
+                mediaIDCell.textContent = media.id;
+                row.appendChild(mediaIDCell);
+    
+                fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
+                .then(response => response.json())
+                .then(data => {
+                    var cellCopiesAvailable = document.createElement("td");
+                    cellCopiesAvailable.textContent = "";
+                    data.copies.forEach(copy => {
+                        cellCopiesAvailable.textContent += "("+copy.id+"), ";
                     });
-                    selectionCell.appendChild(editCopyButton);
-        
-                    row.appendChild(selectionCell);
-        
-                    var titleCell = document.createElement("td");
-                    titleCell.textContent = media.title;
-                    row.appendChild(titleCell);
-    
-                    var authorCell = document.createElement("td");
-                    authorCell.textContent = media.author;
-                    row.appendChild(authorCell);
-    
-                    var priceCell = document.createElement("td");
-                    priceCell.textContent = media.price;
-                    row.appendChild(priceCell);
-    
-                    var isbnCell = document.createElement("td");
-                    isbnCell.textContent = media.ISBN;
-                    row.appendChild(isbnCell);
-    
-                    var categoryCell = document.createElement("td");
-                    categoryCell.textContent = media.SAB_signum;
-                    row.appendChild(categoryCell);
-    
-                    var mediaIDCell = document.createElement("td");
-                    mediaIDCell.textContent = media.id;
-                    row.appendChild(mediaIDCell);
-    
-                    fetch("./php/get-copies-of-media.php?id="+media.id+"&availableOnly=true")
-                    .then(response => response.json())
-                    .then(data => {
-                        var cellCopiesAvailable = document.createElement("td");
-                        cellCopiesAvailable.textContent = "";
-                        data.copies.forEach(copy => {
-                            cellCopiesAvailable.textContent += "("+copy.id+"), ";
-                        });
-                        row.appendChild(cellCopiesAvailable);
-                    })
-                    .catch(error => console.error("Error:", error));
+                    row.appendChild(cellCopiesAvailable);
+                })
+                .catch(error => console.error("Error:", error));
     
                     mediaTableBody.appendChild(row);
                 });
@@ -826,6 +850,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
                     var deleteCopyButton = document.createElement("button");
                     deleteCopyButton.textContent = "Ta bort";
                     deleteCopyButton.value = media.id;
+                    deleteCopyButton.classList.add("btn-edit");
                     //   deleteCopyButton.addEventListener("click", function(e) { 
                     //       removeCopy(e.target);
                     //   });
@@ -841,6 +866,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
                     var editCopyButton = document.createElement("button");
                     editCopyButton.textContent = "Redigera";
                     editCopyButton.value = media.id;
+                    editCopyButton.classList.add("btn-edit");
                     //   editCopyButton.addEventListener("click", function(e) { 
                     //       editCopy(e.target);
                     //   });
@@ -905,6 +931,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
                     var deleteCopyButton = document.createElement("button");
                     deleteCopyButton.textContent = "Ta bort";
                     deleteCopyButton.value = media.id;
+                    deleteCopyButton.classList.add("btn-delete");
                     //   deleteCopyButton.addEventListener("click", function(e) { 
                     //       removeCopy(e.target);
                     //   });
@@ -920,6 +947,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
                     var editCopyButton = document.createElement("button");
                     editCopyButton.textContent = "Redigera";
                     editCopyButton.value = media.id;
+                    editCopyButton.classList.add("btn-edit");
                     //   editCopyButton.addEventListener("click", function(e) { 
                     //       editCopy(e.target);
                     //   });
@@ -997,6 +1025,27 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
             availableFilmsTableBody.deleteRow(0);
         }
     
+        const showBooks = document.getElementById("show-books");
+        showBooks.addEventListener("change", () => {
+            const isChecked = showBooks.checked;
+            const booksContainer = document.getElementById("books-container");
+            booksContainer.style.display = isChecked ? "block" : "none";
+        });
+
+        const showAudioBooks = document.getElementById("show-audiobooks");
+        showAudioBooks.addEventListener("change", () => {
+            const isChecked = showAudioBooks.checked; 
+            const audiobooksContainer = document.getElementById("audiobooks-container");
+            audiobooksContainer.style.display = isChecked ? "block" : "none";
+        });
+
+        const showMovies = document.getElementById("show-movies");
+        showMovies.addEventListener("change", () => {
+            const isChecked = showMovies.checked; 
+            const movieContainer = document.getElementById("movie-container");
+            movieContainer.style.display = isChecked ? "block" : "none";
+        });
+
         //#region get available books
         if(mediaType != "book" || searchTerm.length == 0){
             fetch("./php/get-media.php?availableOnly=true&filter=bok",).then(response => {
@@ -1017,6 +1066,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
                 var deleteCopyButton = document.createElement("button");
                 deleteCopyButton.textContent = "Ta bort";
                 deleteCopyButton.value = media.id;
+                deleteCopyButton.classList.add("btn-delete");
                 // deleteCopyButton.addEventListener("click", function(e) { 
                 //     removeCopy(e.target);
                 // });
@@ -1032,6 +1082,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
                 var editCopyButton = document.createElement("button");
                 editCopyButton.textContent = "Redigera";
                 editCopyButton.value = media.id;
+                editCopyButton.classList.add("btn-edit");
                 editCopyButton.addEventListener("click", function(e) { 
                     if (canEdit) {
                         editCopy(e.target);
@@ -1103,6 +1154,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
                     var deleteCopyButton = document.createElement("button");
                     deleteCopyButton.textContent = "Ta bort";
                     deleteCopyButton.value = media.id;
+                    deleteCopyButton.classList.add("btn-delete");
                     //   deleteCopyButton.addEventListener("click", function(e) { 
                     //       removeCopy(e.target);
                     //   });
@@ -1118,6 +1170,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
                     var editCopyButton = document.createElement("button");
                     editCopyButton.textContent = "Redigera";
                     editCopyButton.value = media.id;
+                    editCopyButton.classList.add("btn-edit");
                     //   editCopyButton.addEventListener("click", function(e) { 
                     //       editCopy(e.target);
                     //   });
@@ -1191,6 +1244,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
                     var deleteCopyButton = document.createElement("button");
                     deleteCopyButton.textContent = "Ta bort";
                     deleteCopyButton.value = media.id;
+                    deleteCopyButton.classList.add("btn-delete");
                     //   deleteCopyButton.addEventListener("click", function(e) { 
                     //       removeCopy(e.target);
                     //   });
@@ -1206,6 +1260,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = ''){
                     var editCopyButton = document.createElement("button");
                     editCopyButton.textContent = "Redigera";
                     editCopyButton.value = media.id;
+                    editCopyButton.classList.add("btn-edit");
                     //   editCopyButton.addEventListener("click", function(e) { 
                     //       editCopy(e.target);
                     //   });

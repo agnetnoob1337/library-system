@@ -80,7 +80,7 @@ if (isset($_POST['mail'])) {
                     echo json_encode(['success' => 'Login successful.']);
                 }
                 else{
-                    header('Location: ../user-dashboard.php');
+                    header('Location: ../media-display-page.php');
                     echo json_encode(['success' => 'Login successful.']);
                 }
             } else {

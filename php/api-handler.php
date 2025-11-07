@@ -46,11 +46,17 @@ class ApiHandler{
         // }
 
         if($mediatype == "book" || $mediatype == "audiobook"){
+            if(empty($author)){
+                return json_encode(["error" => "A media must have an author."]);
+            }
             if (strlen($ISBN) != 13) {
                 return json_encode(["error" => "ISBN must be 13 characters long."]);
             }
         }
         elseif ($mediatype == "film"){
+            if(empty($author)){
+                return json_encode(["error" => "A media must have an director."]);
+            }
             if (strlen($IMDB) >= 7) {
                 return json_encode(["error" => "IMDB ID must be at least 7 characters long."]);
             }
@@ -77,6 +83,11 @@ class ApiHandler{
             return json_encode(["error" => "Quantity must be at least 1."]);
         }
 
+        if(empty($price)){
+            return json_encode(["error" => "A media must have a price."]);
+        }
+        
+
         $this->conn->begin_transaction();
         try {
             $addMediaQuery = "INSERT INTO media (title, author, SAB_signum, price, ISBN, IMDB, mediatype) VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -86,30 +97,31 @@ class ApiHandler{
                 throw new Exception("Error: " . $stmt->error);
             }
             if($mediatype == "film"){
-                $getMediaId = "SELECT id FROM media WHERE IMDB = ?";
+                $getMediaId = "SELECT id FROM media WHERE IMDB = ? AND title = ? AND author = ? AND SAB_signum = ? AND price = ?";
                 $stmt = $this->conn->prepare($getMediaId);
-                $stmt->bind_param("s", $IMDB);
+                $stmt->bind_param("ssssi", $IMDB, $title, $author, $SABSignum, $price);
             } else{
-                $getMediaId = "SELECT id FROM media WHERE ISBN = ?";
+                $getMediaId = "SELECT id FROM media WHERE ISBN = ? AND title = ? AND author = ? AND SAB_signum = ? AND price = ?";
                 $stmt = $this->conn->prepare($getMediaId);
-                $stmt->bind_param("s", $ISBN);
+                $stmt->bind_param("ssssi", $ISBN, $title, $author, $SABSignum, $price);
             }
             $stmt->execute();
             $result = $stmt->get_result();
+            if($row = $result->fetch_assoc()){
+                $id = $row['id'];
+            }
             for ($i = 0; $i < $quantity; $i++) {
-                if($row = $result->fetch_assoc()){
-                    $addCopyQuery = "INSERT INTO copy (media_id) VALUES(?)";
-                    $stmt = $this->conn->prepare($addCopyQuery);
-                    $stmt->bind_param("i", $row['id']);
-                    if (!$stmt->execute()) {
-                        throw new Exception("Error: " . $stmt->error);
-                    }
+                $addCopyQuery = "INSERT INTO copy (media_id) VALUES(?)";
+                $stmt = $this->conn->prepare($addCopyQuery);
+                $stmt->bind_param("i", $row['id']);
+                if (!$stmt->execute()) {
+                    throw new Exception("Error: " . $stmt->error);
                 }
             }
 
             $this->conn->commit();
             $stmt->close();
-            return json_encode("New media added successfully.");
+            return json_encode(["success" => "New media added successfully."]);
         } catch (Exception $e) {
             $this->conn->rollback();
             return json_encode(["error" => $e->getMessage()]);
@@ -117,6 +129,10 @@ class ApiHandler{
     }
     //Add copy based on existing media
     function addCopy(int $mediaId, int $quantity = 1) {
+        if(empty($quantity)){
+            return json_encode(["error" => "choose a number of copies to add"]);
+        }
+
         $this->conn->begin_transaction();
         $addCopyQuery = "INSERT INTO copy (media_id) VALUES(?)";
         $stmt = $this->conn->prepare($addCopyQuery);
@@ -431,6 +447,25 @@ class ApiHandler{
             } else {
                 $stmt->close();
                 return json_encode(["error" => "Media copy not found."]);
+            }
+        } else {
+            $stmt->close();
+            return json_encode(["error" => "Error: " . $stmt->error]);
+        }
+    }
+
+    function removeSingularCopy(int $copyId){
+        $removeCopyQuery = "DELETE FROM copy WHERE id = ?";
+        $stmt = $this->conn->prepare($removeCopyQuery);
+        $stmt->bind_param("i", $copyId);
+
+        if ($stmt->execute()) {
+            if ($stmt->affected_rows > 0) {
+                $stmt->close();
+                return json_encode("Copy deleted successfully.");
+            } else {
+                $stmt->close();
+                return json_encode(["error" => "Copy not found."]);
             }
         } else {
             $stmt->close();

@@ -1,19 +1,3 @@
-document.addEventListener('DOMContentLoaded', function() {
-    
-    
-
-
-
-    loadAllMedia();
-
-    
-
-
-});
-
-
-
-
 async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
     console.log(mediaType, searchFor, searchTerm);
     var SABCategories = [];
@@ -177,9 +161,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             .then(data => {
                 var cellCopiesAvailable = document.createElement("div");
                 cellCopiesAvailable.textContent = "";
-                data.copies.forEach(copy => {
-                    cellCopiesAvailable.textContent += "("+copy.id+"), ";
-                });
+                cellCopiesAvailable.textContent = "Tillgängliga exemplar: " + data.copies.length;
                 textDiv.appendChild(cellCopiesAvailable);
             }).catch(error => console.error("Error:", error));
 
@@ -226,4 +208,36 @@ document.addEventListener("DOMContentLoaded", function() {
         mediaCatalog.classList.remove("media-list");
         mediaCatalog.classList.add("media-grid");
     });
+});
+
+
+
+
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    const searchInput = document.getElementById("search-input");
+    const mediaTypeSelect = document.getElementById("media-type");
+    const searchForSelect = document.getElementById("search-for");
+
+    // Trigger new load when user types or changes filter options
+    searchInput.addEventListener("input", applyFilters);
+    mediaTypeSelect.addEventListener("change", applyFilters);
+    searchForSelect.addEventListener("change", applyFilters);
+
+    // Initial load
+    loadAllMedia();
+
+    async function applyFilters() {
+        const mediaType = mediaTypeSelect.value.trim().toLowerCase();
+        const searchFor = searchForSelect.value.trim().toLowerCase();
+        const searchTerm = searchInput.value.trim().toLowerCase();
+
+        // Clear previous results
+        const container = document.getElementById("media-container");
+        container.innerHTML = "";
+
+        // Reload filtered media from backend
+        await loadAllMedia(mediaType, searchFor, searchTerm);
+    }
 });
