@@ -58,9 +58,9 @@ if (!isset($_SESSION['user_id'])) {
         </div>
     
         <div class="btn-group navigation-group">
+            <button id="show-media" class="btn nav-btn">🔎 Sök media</button>
             <button id="show-user-loans" class="btn nav-btn">📚 Dina lån</button>
-            <button id="show-user-late" class="btn nav-btn">📚 Sena lån</button>
-            <button id="show-media" class="btn nav-btn">📚 Sök media</button>
+            <button id="show-user-late" class="btn nav-btn">⚠️ Sena lån</button>
         </div>
         <div class="user-menu">
             <button class="user-icon" id="user-menu-btn">👤</button>
