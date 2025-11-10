@@ -8,7 +8,7 @@ $apiHandler = new ApiHandler();
 $userInput = file_get_contents("php://input");
 $mediaData = json_decode($userInput, true);
 
-$requiredFields = ['username', 'password'];
+$requiredFields = ['username', 'password', 'mail'];
 
 $hasRequiredField = false;
 foreach ($requiredFields as $field) {
@@ -23,6 +23,7 @@ if ($hasRequiredField && isset($mediaData['userId']) && !empty($mediaData['userI
         'username' => $mediaData['username'] ?? "",
         'password' => $mediaData['password'] ?? "",
         'isAdmin' => $mediaData['isAdmin'] ?? 0,
+        'mail' => $mediaData['mail'] ?? "",
         'id' => $mediaData['userId'] ?? "",
     ];
 

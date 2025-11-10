@@ -138,8 +138,6 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             
 
 
-
-
             gridItem.appendChild(textItem)
             gridItem.appendChild(iconItem)
             gridItem.appendChild(bottomTextItem)
@@ -151,40 +149,8 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             itemContainer.appendChild(gridItem)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             //Top container for item
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-            
             //#region ---------TEXT ELEMENTS----------------
             var textDiv = document.createElement("div");
             textDiv.classList.add("media-text-container")
@@ -198,7 +164,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
                 cellCopiesAvailable.textContent = "Tillgängliga exemplar: " + availableCount;
                 textDiv.appendChild(cellCopiesAvailable);
             
-                // 🟡 Disable the loan button if no copies
+                // Disable the loan button if no copies
                 if (availableCount === 0) {
                     loanButton.disabled = true;
                     loanButton.textContent = "Ej tillgänglig";
@@ -216,7 +182,7 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
             typeCell.textContent = media.mediatype;
             bottomItem.appendChild(typeCell);
 
-
+            //#endregion
 
             availableMediaTableBody.appendChild(itemContainer);
         });
@@ -227,11 +193,18 @@ async function loadAllMedia(mediaType = '', searchFor = '', searchTerm = '') {
 
 
 
-function loadBorrowedMedia() {
+function loadBorrowedMedia(mediaType = '', searchFor = '', searchTerm = '') {
     var borrowedMediaContainer = document.getElementById("media-borrowed"); 
-    borrowedMediaContainer.innerHTML = ""; // töm container innan vi lägger till nytt
+    borrowedMediaContainer.innerHTML = "";
 
-    fetch("./php/get-user-loans.php")
+    let params = new URLSearchParams();
+    params.append("availableOnly", "true");
+
+    if (mediaType) params.append("filter", mediaType);
+    if (searchFor) params.append("searchFor", searchFor);
+    if (searchTerm) params.append("searchTerm", searchTerm);
+
+    fetch("./php/get-user-loans.php?" + params.toString())
         .then(response => response.json())
         .then(data => {
             console.log(data);
@@ -313,6 +286,63 @@ function loadBorrowedMedia() {
         });
 }
 
+
+function loadLateMedia() {
+    var lateMediaContainer = document.getElementById("media-late"); 
+    lateMediaContainer.innerHTML = "";
+
+    fetch("./php/get-late-returns.php")
+        .then(res => res.json())
+        .then(data => {
+            data.forEach(loan => {
+
+                var itemContainer = document.createElement("li");
+                itemContainer.classList.add("media-box", "top-bottom-flex");
+                itemContainer.classList.add("bok");
+                var topItem = document.createElement("div");
+                topItem.classList.add("catalog-text");
+
+
+                // Textcontainer
+                var textDiv = document.createElement("div");
+                textDiv.classList.add("media-text-container");
+
+                var titleCell = document.createElement("h2");
+                titleCell.textContent = loan.media_title;
+                textDiv.appendChild(titleCell);
+
+
+                var typeCell = document.createElement("h4");
+                typeCell.textContent = loan.mediatype;
+                textDiv.appendChild(typeCell);
+
+                var dueCell = document.createElement("div");
+                dueCell.textContent = "Försenad sedan: " + loan.date_of_return;
+                dueCell.style.color = "red";
+                textDiv.appendChild(dueCell);
+
+                var fee = document.createElement("div");
+                fee.textContent = "Avgift: " + loan.fee + " kr";
+                textDiv.appendChild(fee);
+
+                topItem.appendChild(textDiv);
+
+                var bottomItem = document.createElement("div");
+                var status = document.createElement("h4");
+                status.textContent = "Försenad";
+                status.style.color = "darkred";
+                bottomItem.appendChild(status);
+
+                itemContainer.appendChild(topItem);
+                itemContainer.appendChild(bottomItem);
+                
+                lateMediaContainer.appendChild(itemContainer);
+            });
+        });
+}
+
+
+
 function returnMedia(copyId, mediaId, userId){
     console.log(copyId);
     fetch("./php/media-return.php", {
@@ -377,17 +407,45 @@ document.addEventListener("DOMContentLoaded", function() {
     showUserLoans.addEventListener('click', () => {
         document.getElementById("media-catalog").style.display = "none";
         document.getElementById("show-media").style.display = "block";
+        document.getElementById("show-user-late").style.display = "block";
         document.getElementById("show-user-loans").style.display = "none";
         document.getElementById("media-borrowed-container").style.display = "block";
+        document.getElementById("media-late-container").style.display = "none";
+        document.querySelector(".search-bar").style.display = "block";
+        document.querySelectorAll(".filter-group").forEach(el => {
+            el.style.display = "block";
+        });
         
         loadBorrowedMedia();
     });
+
+    const showUserLate = document.getElementById("show-user-late");
+    showUserLate.addEventListener('click', () => {
+        document.getElementById("media-catalog").style.display = "none";
+        document.getElementById("show-media").style.display = "block";
+        document.getElementById("show-user-late").style.display = "none";
+        document.getElementById("show-user-loans").style.display = "block";
+        document.getElementById("media-borrowed-container").style.display = "none";
+        document.getElementById("media-late-container").style.display = "block";
+        document.querySelector(".search-bar").style.display = "none";
+        document.querySelectorAll(".filter-group").forEach(el => {
+            el.style.display = "none";
+        });
+        loadLateMedia();
+    });
+
     const showMedia = document.getElementById("show-media");
     showMedia.addEventListener('click', () => {
         document.getElementById("media-catalog").style.display = "block";
         document.getElementById("show-media").style.display = "none";
         document.getElementById("show-user-loans").style.display = "block";
         document.getElementById("media-borrowed-container").style.display = "none";
+        document.getElementById("media-late-container").style.display = "none";
+        document.getElementById("show-user-late").style.display = "block";
+        document.querySelectorAll(".filter-group").forEach(el => {
+            el.style.display = "block";
+        });
+        document.querySelector(".search-bar").style.display = "block";
 
         mediaCatalog.classList.add("media-catalog-grid");
 
@@ -436,5 +494,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Reload filtered media from backend
         await loadAllMedia(mediaType, searchFor, searchTerm);
+        await loadBorrowedMedia(mediaType, searchFor, searchTerm);
+        await loadLateMedia(mediaType, searchFor, searchTerm);
     }
 });

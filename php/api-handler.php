@@ -534,6 +534,12 @@ class ApiHandler{
             $paramsToBind[] = password_hash($params['password'], PASSWORD_DEFAULT);
         }
 
+        if(!empty($params['mail'])){
+            $updateUserQuery .= "mail = ?, ";
+            $types .= "s";
+            $paramsToBind[] = $params['mail'];
+        }
+
         if(isset($params['isAdmin'])){
             $updateUserQuery .= "is_admin = ?, ";
             $types .= "i";
@@ -604,7 +610,10 @@ class ApiHandler{
         $stmt->execute();
     }
 
-    function getUserLoanedMedia(int $userId){
+    function getUserLoanedMedia($filters, int $userId){
+        $params = [];
+        $types = "i";
+        $params[] = $userId;
         $getLoanedMediaQuery = "
             SELECT media.*, copy.id AS copy_id, checked_out.checkout_date, checked_out.return_date, checked_out.c_id
             FROM checked_out
@@ -612,8 +621,59 @@ class ApiHandler{
             INNER JOIN media ON copy.media_id = media.id
             WHERE checked_out.user_id = ?
         ";
+
+        if (!empty($filters['filter'])) {
+            $getLoanedMediaQuery .= " AND mediatype = ?";
+            $params[] = $filters['filter'];
+            $types .= "s";
+        }
+        $searchFor = false;
+        // checks if the user search for something specific
+        if (!empty($filters['searchFor']) && $filters['searchTerm'] !== "") {
+            switch ($filters['searchFor']) {
+                case 'title':
+                    $getLoanedMediaQuery .= " AND media.title LIKE ?";
+                    $params[] = "%" . $filters['searchTerm'] . "%";
+                    $types .= "s";
+                    $searchFor = true;
+                    break;
+        
+                case 'author':
+                    $getLoanedMediaQuery .= " AND media.author LIKE ?";
+                    $params[] = "%" . $filters['searchTerm'] . "%";
+                    $types .= "s";
+                    $searchFor = true;
+                    break;
+        
+                case 'category':
+                    $getLoanedMediaQuery .= " AND media.SAB_signum IN (
+                        SELECT signum FROM sab_categories WHERE category LIKE ?
+                    )";
+                    $params[] = "%" . $filters['searchTerm'] . "%";
+                    $types .= "s";
+                    $searchFor = true;
+                    break;
+            }
+        }
+        // if the user doesnt search for something specific, get the values for everything
+        if(!$searchFor){
+            $getLoanedMediaQuery .= " AND (media.title LIKE ?";
+            $params[] = "%" . $filters['searchTerm'] . "%";
+            $types .= "s";
+
+            $getLoanedMediaQuery .= " OR media.author LIKE ?";
+            $params[] = "%" . $filters['searchTerm'] . "%";
+            $types .= "s";
+
+            $getLoanedMediaQuery .= " OR media.SAB_signum IN (
+                SELECT signum FROM sab_categories WHERE category LIKE ?
+            ))";
+            $params[] = "%" . $filters['searchTerm'] . "%";
+            $types .= "s";
+        }
+
         $stmt = $this->conn->prepare($getLoanedMediaQuery);
-        $stmt->bind_param("i", $userId);
+        $stmt->bind_param($types, ...$params);
         $stmt->execute();
 
         $result = $stmt->get_result();
@@ -721,8 +781,14 @@ class ApiHandler{
         }
     }
 
-    function getLateReturns(int $userId){
+    function getLateReturns($filters, int $userId){
+        $params = [];
+        $types = "i";
+        $params[] = $userId;
+
         $getLateReturnsQuery = "SELECT * FROM late_returns WHERE user_id = ?";
+
+        
         $stmt = $this->conn->prepare($getLateReturnsQuery);
         $stmt->bind_param("i", $userId);
         $stmt->execute();

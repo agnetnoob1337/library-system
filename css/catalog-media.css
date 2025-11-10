@@ -1,3 +1,12 @@
+html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+
 button {
     font-size: 1.2rem;
 }
@@ -11,11 +20,12 @@ menu {
     border-radius: 0.5rem;
 }
 
+
 main {
     width: 100%;
     max-width: 82rem;
     box-sizing: border-box;
-    /* padding: 4rem; */
+    padding: 4rem;
     padding-top: 1rem;
 }
 
@@ -34,6 +44,15 @@ main {
 }
 
 #media-borrowed {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin: 0 auto;
+    max-width: 80vw;
+}
+
+#media-late {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
@@ -129,6 +148,10 @@ h4 {
     flex-direction: row;
 }
 
+.catalog-text {
+    width: 100%;
+    justify-content: flex-end;
+}
 
 .catalog-text-icon {
     display: flex;
@@ -430,3 +453,5 @@ select:focus {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 }
+
+

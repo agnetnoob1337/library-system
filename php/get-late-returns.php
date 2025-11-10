@@ -7,7 +7,12 @@ $apiHandler = new ApiHandler();
 
 if (isset($_SESSION["user_id"])) {
     $userId = $_SESSION["user_id"];
-    echo $apiHandler->getLateReturns($userId);
+    $params = [
+        'filter' => $_GET['filter'] ?? "", 
+        'searchFor' => $_GET['searchFor'] ?? "",
+        'searchTerm' => $_GET['searchTerm'] ?? "",
+    ];
+    echo $apiHandler->getLateReturns($params, $userId);
 } else {
     echo json_encode(["error" => "User not logged in"]);
 }

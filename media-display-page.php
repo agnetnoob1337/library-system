@@ -56,10 +56,11 @@ if (!isset($_SESSION['user_id'])) {
             <button id="grid-button" class="btn toggle-btn">🔳 Rutnät</button>
             <button id="list-button" class="btn toggle-btn">📄 Lista</button>
         </div>
-
+    
         <div class="btn-group navigation-group">
             <button id="show-user-loans" class="btn nav-btn">📚 Dina lån</button>
-            <button id="show-media" class="btn nav-btn">⬅️ Tillbaka</button>
+            <button id="show-user-late" class="btn nav-btn">📚 Sena lån</button>
+            <button id="show-media" class="btn nav-btn">📚 Sök media</button>
         </div>
         <div class="user-menu">
             <button class="user-icon" id="user-menu-btn">👤</button>
@@ -84,6 +85,13 @@ if (!isset($_SESSION['user_id'])) {
         <div id="media-borrowed-container">
             <div>
                 <ul id="media-borrowed">
+
+                </ul>
+            </div>
+        </div>
+        <div id="media-late-container">
+            <div>
+                <ul id="media-late">
 
                 </ul>
             </div>

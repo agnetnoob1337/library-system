@@ -296,6 +296,11 @@ if (!isset($_SESSION['user_id'] ) || !$_SESSION['is_admin']) {
                     </label>
                     <input type="password" class="password" name="password" />
                     <br>
+                    <label for="mail">
+                        Mail:
+                    </label>
+                    <input type="mail" id="mail" name="mail" required />
+                    <br>
                     <label for="is-admin">
                         Är admin:
                     </label>

@@ -527,8 +527,9 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch("./php/get-users.php?userId=" + userId).then(response => {
             return response.json();
         }).then(data => {
-            
+            console.log(data);
             userEditForm.username.value = data.username;
+            userEditForm.mail.value = data.mail;
             userEditForm.isAdmin.checked = data.is_admin;
         });
         editUserDialog.dataset.userId = userId;
@@ -538,9 +539,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     //#region handle edit user
     editUserDialog.addEventListener("close", (e) => {
-        e.preventDefault();
+        //e.preventDefault();
         const username = userEditForm.username.value;
         const password = userEditForm.password.value;
+        const mail = userEditForm.mail.value;
         const isAdmin = userEditForm.isAdmin.checked;
         const userId = editUserDialog.dataset.userId;
       
@@ -557,7 +559,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     userId: userId,
                     username: username,
                     password: password,
-                    isAdmin: isAdmin
+                    isAdmin: isAdmin, 
+                    mail: mail
                 })
             }).then(response => {
                 return response.text();
