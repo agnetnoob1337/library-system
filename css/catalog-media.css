@@ -303,6 +303,9 @@ h4 {
     display: none;
 }
 
+#media-late-container{
+    display: none;
+}
 
 .btn {
     background: #727272;

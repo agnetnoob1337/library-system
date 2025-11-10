@@ -57,7 +57,7 @@ class ApiHandler{
             if(empty($author)){
                 return json_encode(["error" => "A media must have an director."]);
             }
-            if (strlen($IMDB) >= 7) {
+            if (strlen($IMDB) < 7) {
                 return json_encode(["error" => "IMDB ID must be at least 7 characters long."]);
             }
         }
